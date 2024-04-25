@@ -1,9 +1,18 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:eco_tourism/forms/tourist_centre_form.dart';
+import 'package:eco_tourism/models/models.dart';
+import 'package:eco_tourism/screens/best_hotels.dart';
+import 'package:eco_tourism/screens/see_all.dart';
 import 'package:flutter/material.dart';
 import 'package:carousel_slider/carousel_slider.dart';
+import '../forms/cultural_centres_form.dart';
 import '../widgets/build_slide.dart';
-import 'destination_detail.dart';
-import 'login_page.dart';
+import '../forms/login_page.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+
+import 'best_cultural_centres.dart';
+import 'best_tourist_centres.dart';
+import 'best_transports.dart';
 
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
@@ -24,12 +33,31 @@ class _HomePageState extends State<HomePage> {
     'Culture'
   ];
   String _activeCategory = 'Hotels';
+  List<Map<String, dynamic>> hotels = [];
 
   @override
   void initState() {
     super.initState();
-    // Check user login status when the widget initializes
+    // Fetch hotel data from Firestore
     checkUserLoginStatus();
+
+    fetchHotels();
+  }
+
+  // Function to fetch hotel data from Firestore
+  void fetchHotels() async {
+    final QuerySnapshot hotelSnapshot =
+        await FirebaseFirestore.instance.collection('hotels').get();
+    final List<Map<String, dynamic>> fetchedHotels = hotelSnapshot.docs
+        .map((doc) => {
+              'name': doc['name'],
+              'imageUrl': doc['imageUrl'],
+            })
+        .toList();
+
+    setState(() {
+      hotels = fetchedHotels;
+    });
   }
 
   void checkUserLoginStatus() {
@@ -47,32 +75,10 @@ class _HomePageState extends State<HomePage> {
       appBar: AppBar(
         automaticallyImplyLeading: false,
         backgroundColor: const Color.fromRGBO(238, 238, 238, 1),
-        titleSpacing: 0,
-        title: Container(
-          decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(20),
-            border: Border.all(color: Colors.white),
-            boxShadow: [
-              BoxShadow(
-                color: Colors.white.withOpacity(0.5),
-                spreadRadius: 2,
-                blurRadius: 5,
-                offset: const Offset(0, 3),
-              ),
-            ],
-          ),
-          child: TextField(
-            textAlignVertical: TextAlignVertical.center,
-            decoration: const InputDecoration(
-              hintText: 'Search',
-              border: InputBorder.none,
-              contentPadding: EdgeInsets.symmetric(horizontal: 4),
-              prefixIcon: Icon(Icons.search),
-            ),
-            onChanged: (value) {
-              // Handle search text changes
-            },
-          ),
+        // titleSpacing: 1,
+        title: const Text(
+          "Travel Malawi",
+          style: TextStyle(fontWeight: FontWeight.bold),
         ),
         actions: <Widget>[
           _isLoggedIn
@@ -244,110 +250,31 @@ class _HomePageState extends State<HomePage> {
                               color: Colors.black, fontWeight: FontWeight.w700),
                         ),
                         TextButton(
-                          onPressed: () async {},
+                          onPressed: () async {
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (context) =>
+                                    const SeeAllPage(), // Replace DestinationDetailPage() with your actual detail page
+                              ),
+                            );
+                          },
                           child: const Text("See All"),
                         )
                       ],
                     ),
                     const SizedBox(height: 10),
-                    Row(
-                      children: [
-                        Expanded(
-                          child: SizedBox(
-                            height: 250,
-                            child: ListView(
-                              scrollDirection: Axis.horizontal,
-                              children: [
-                                buildCustomCard(
-                                    'images/protea_hotel.jpg', 'Protea Hotel'),
-                                buildCustomCard(
-                                    'images/latitude.webp', 'Latitude Hotel'),
-                                buildCustomCard('images/gule.jpg', 'Title 3'),
-                                // Add more cards as needed
-                              ],
-                            ),
-                          ),
-                        ),
-                      ],
+                    SizedBox(
+                      height: MediaQuery.of(context).size.height * 0.245,
+                      child: const Scrollbar(
+                        child: BestHotels(),
+                      ),
                     ),
                   ],
                 ),
               ),
             ],
           ),
-        ),
-      ),
-    );
-  }
-
-  Widget buildCustomCard(String imagePath, String title) {
-    return SizedBox(
-      width: 150,
-      child: Card(
-        elevation: 3,
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(12),
-        ),
-        child: Stack(
-          alignment: Alignment.center,
-          children: [
-            ClipRRect(
-              borderRadius: BorderRadius.circular(12),
-              child: Image.asset(
-                imagePath,
-                width: double.infinity,
-                height: 300,
-                fit: BoxFit.cover,
-              ),
-            ),
-            Positioned(
-              top: 8,
-              right: 8,
-              child: IconButton(
-                icon: const Icon(
-                  Icons.favorite_border,
-                  color: Colors.red,
-                ),
-                onPressed: () {
-                  // Add your onPressed logic here
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (context) =>
-                          const DestinationDetailPage(), // Replace DestinationDetailPage() with your actual detail page
-                    ),
-                  );
-                },
-              ),
-            ),
-            Positioned(
-              bottom: 8,
-              left: 8,
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  const Row(
-                    children: [
-                      Icon(Icons.star, color: Colors.yellow),
-                      Icon(Icons.star, color: Colors.yellow),
-                      Icon(Icons.star, color: Colors.yellow),
-                      Icon(Icons.star, color: Colors.yellow),
-                      Icon(Icons.star, color: Colors.yellow),
-                    ],
-                  ),
-                  const SizedBox(width: 8),
-                  Text(
-                    title,
-                    style: const TextStyle(
-                      fontSize: 18,
-                      fontWeight: FontWeight.bold,
-                      color: Colors.white,
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          ],
         ),
       ),
     );

@@ -1,8 +1,8 @@
-import 'package:eco_tourism/screens/login_page.dart';
+import 'package:eco_tourism/forms/login_page.dart';
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import '../user_auth/firebase_auth_implementation/firebase_auth_services.dart';
-import 'home_page.dart';
+import '../screens/home_page.dart';
 
 class SignupPage extends StatefulWidget {
   const SignupPage({super.key});
@@ -226,6 +226,7 @@ class _SignupPageState extends State<SignupPage> {
 
       // If registration is successful, navigate to home page
       Navigator.pushReplacement(
+        // ignore: use_build_context_synchronously
         context,
         MaterialPageRoute(
           builder: (context) => const HomePage(),

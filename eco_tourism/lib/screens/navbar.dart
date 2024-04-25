@@ -1,5 +1,5 @@
 import 'package:eco_tourism/screens/home_page.dart';
-import 'package:eco_tourism/screens/profile_page.dart';
+import 'package:eco_tourism/forms/profile_page.dart';
 import 'package:flutter/material.dart';
 import 'about_page.dart';
 import 'favorites_page.dart';

@@ -38,6 +38,7 @@ dependencies:
   firebase_auth:
   cloud_firestore:
   firebase_storage:
+
   font_awesome_flutter:
   hive:
   hive_flutter:
@@ -50,6 +51,8 @@ dependencies:
   get:
   carousel_slider:
   image_card:
+  image_picker:
+  flutter_rating_bar:
 
 dev_dependencies:
   flutter_test:

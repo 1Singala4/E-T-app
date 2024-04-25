@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 
 class DestinationDetailPage extends StatefulWidget {
-  const DestinationDetailPage({Key? key}) : super(key: key);
+  const DestinationDetailPage({super.key});
 
   @override
   State<DestinationDetailPage> createState() => _DestinationDetailPageState();
@@ -89,7 +89,7 @@ class _DestinationDetailPageState extends State<DestinationDetailPage> {
                         // Gallery images
                         GridView.count(
                           crossAxisCount: 3,
-                          physics: NeverScrollableScrollPhysics(),
+                          physics: const NeverScrollableScrollPhysics(),
                           shrinkWrap: true,
                           children: [
                             for (int i = 0; i < 6; i++)
@@ -97,7 +97,7 @@ class _DestinationDetailPageState extends State<DestinationDetailPage> {
                                 margin: const EdgeInsets.all(4),
                                 decoration: BoxDecoration(
                                   borderRadius: BorderRadius.circular(8),
-                                  image: DecorationImage(
+                                  image: const DecorationImage(
                                     image:
                                         AssetImage('images/protea_hotel.jpg'),
                                     fit: BoxFit.cover,
