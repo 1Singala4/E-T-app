@@ -1,4 +1,5 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:eco_tourism/screens/transport_detail.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_rating_bar/flutter_rating_bar.dart';
@@ -91,6 +92,8 @@ class _BestTransportsState extends State<BestTransports> {
           itemBuilder: (context, index) {
             final transport = transports[index];
             final name = transport['name'];
+            final email = transport['email'];
+            final phoneNumber = transport['phoneNumber'];
             final destination = transport['destination'];
             final price = transport['price'];
             final description = transport['description'];
@@ -99,18 +102,21 @@ class _BestTransportsState extends State<BestTransports> {
 
             return GestureDetector(
               onTap: () {
-                // Navigator.push(
-                //   context,
-                //   MaterialPageRoute(
-                //     builder: (context) => HotelDetails(
-                //       title: title,
-                //       description: description,
-                //       datePosted:
-                //           datePosted, // Use datePosted instead of datePosted
-                //       imageUrl: imageUrl,
-                //     ),
-                //   ),
-                // );
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => DestinationDetailPage(
+                      name: name,
+                      destination: destination,
+                      price: price,
+                      description: description,
+                      datePosted: datePosted,
+                      imageUrl: imageUrl,
+                      email: email,
+                      phoneNumber: phoneNumber,
+                    ),
+                  ),
+                );
               },
               child: Card(
                 margin: const EdgeInsets.all(8.0),

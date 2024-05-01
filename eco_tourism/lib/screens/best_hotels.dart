@@ -5,6 +5,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_rating_bar/flutter_rating_bar.dart';
 import 'package:intl/intl.dart';
 
+import 'destination_detail.dart';
+
 class BestHotels extends StatefulWidget {
   const BestHotels({super.key});
 
@@ -89,6 +91,8 @@ class _BestHotelsState extends State<BestHotels> {
           itemBuilder: (context, index) {
             final hotel = hotels[index];
             final name = hotel['name'];
+            final email = hotel['email'];
+            final phoneNumber = hotel['phoneNumber'];
             final location = hotel['location'];
             final price = hotel['price'];
             final description = hotel['description'];
@@ -97,18 +101,21 @@ class _BestHotelsState extends State<BestHotels> {
 
             return GestureDetector(
               onTap: () {
-                // Navigator.push(
-                //   context,
-                //   MaterialPageRoute(
-                //     builder: (context) => HotelDetails(
-                //       title: title,
-                //       description: description,
-                //       datePosted:
-                //           datePosted, // Use datePosted instead of datePosted
-                //       imageUrl: imageUrl,
-                //     ),
-                //   ),
-                // );
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => DestinationDetailPage(
+                      name: name,
+                      location: location,
+                      price: price,
+                      description: description,
+                      datePosted: datePosted,
+                      imageUrl: imageUrl,
+                      email: email,
+                      phoneNumber: phoneNumber,
+                    ),
+                  ),
+                );
               },
               child: Card(
                 margin: const EdgeInsets.all(8.0),

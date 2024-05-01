@@ -13,7 +13,7 @@ import 'edit_image_widget.dart';
 
 final Logger logger = Logger();
 
-class TouristCentreForm extends StatefulWidget {
+class TouristCentresForm extends StatefulWidget {
   final String? documentId;
   final String? name;
   final String? email;
@@ -24,7 +24,7 @@ class TouristCentreForm extends StatefulWidget {
   final DateTime? datePosted;
   final String? imageUrl;
 
-  const TouristCentreForm({
+  const TouristCentresForm({
     super.key,
     this.documentId,
     this.name,
@@ -38,10 +38,10 @@ class TouristCentreForm extends StatefulWidget {
   });
 
   @override
-  State<TouristCentreForm> createState() => _TouristCentreFormState();
+  State<TouristCentresForm> createState() => _TouristCentresFormState();
 }
 
-class _TouristCentreFormState extends State<TouristCentreForm> {
+class _TouristCentresFormState extends State<TouristCentresForm> {
   final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
   bool isLoading = false;
   bool isPostSuccess = false;

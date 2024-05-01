@@ -1,4 +1,5 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:eco_tourism/screens/destination_detail.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_rating_bar/flutter_rating_bar.dart';
@@ -73,9 +74,9 @@ class _BestTouristCentresState extends State<BestTouristCentres> {
           );
         }
 
-        final tourist_centres = snapshot.data!.docs;
+        final touristCentres = snapshot.data!.docs;
 
-        if (tourist_centres.isEmpty) {
+        if (touristCentres.isEmpty) {
           return const Column(
             children: [
               SizedBox(height: 16),
@@ -88,31 +89,36 @@ class _BestTouristCentresState extends State<BestTouristCentres> {
 
         return ListView.builder(
           scrollDirection: Axis.horizontal,
-          itemCount: tourist_centres.length,
+          itemCount: touristCentres.length,
           itemBuilder: (context, index) {
-            final tourist_centre = tourist_centres[index];
-            final name = tourist_centre['name'];
-            final location = tourist_centre['location'];
-            final price = tourist_centre['price'];
-            final description = tourist_centre['description'];
+            final touristCentre = touristCentres[index];
+            final name = touristCentre['name'];
+            final email = touristCentre['email'];
+            final phoneNumber = touristCentre['phoneNumber'];
+            final location = touristCentre['location'];
+            final price = touristCentre['price'];
+            final description = touristCentre['description'];
             final datePosted =
-                (tourist_centre['datePosted'] as Timestamp).toDate();
-            final imageUrl = tourist_centre['imageUrl'];
+                (touristCentre['datePosted'] as Timestamp).toDate();
+            final imageUrl = touristCentre['imageUrl'];
 
             return GestureDetector(
               onTap: () {
-                // Navigator.push(
-                //   context,
-                //   MaterialPageRoute(
-                //     builder: (context) => HotelDetails(
-                //       title: title,
-                //       description: description,
-                //       datePosted:
-                //           datePosted, // Use datePosted instead of datePosted
-                //       imageUrl: imageUrl,
-                //     ),
-                //   ),
-                // );
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => DestinationDetailPage(
+                      name: name,
+                      email: email,
+                      phoneNumber: phoneNumber,
+                      location: location,
+                      price: price,
+                      description: description,
+                      datePosted: datePosted,
+                      imageUrl: imageUrl,
+                    ),
+                  ),
+                );
               },
               child: Card(
                 margin: const EdgeInsets.all(8.0),
@@ -158,7 +164,7 @@ class _BestTouristCentresState extends State<BestTouristCentres> {
                                           context,
                                           MaterialPageRoute(
                                             builder: (context) =>
-                                                const TouristCentreForm(), // Replace DestinationDetailPage() with your actual detail page
+                                                const TouristCentresForm(), // Replace DestinationDetailPage() with your actual detail page
                                           ),
                                         );
                                       },
@@ -172,8 +178,8 @@ class _BestTouristCentresState extends State<BestTouristCentres> {
                                       onPressed: () {
                                         _confirmDeleteHotel(
                                             context,
-                                            tourist_centre.id,
-                                            tourist_centre['imageUrl']);
+                                            touristCentre.id,
+                                            touristCentre['imageUrl']);
                                       },
                                     ),
                                   ],

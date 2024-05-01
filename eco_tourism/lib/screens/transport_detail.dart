@@ -1,11 +1,10 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/widgets.dart';
 
 class DestinationDetailPage extends StatelessWidget {
   final String name;
   final String email;
   final String phoneNumber;
-  final String location;
+  final String destination;
   final String price;
   final String description;
   final DateTime datePosted;
@@ -14,7 +13,7 @@ class DestinationDetailPage extends StatelessWidget {
   const DestinationDetailPage({
     super.key,
     required this.name,
-    required this.location,
+    required this.destination,
     required this.price,
     required this.description,
     required this.datePosted,
@@ -76,23 +75,10 @@ class DestinationDetailPage extends StatelessWidget {
                         const SizedBox(height: 8),
                         // Location
                         Text(
-                          location,
+                          destination,
                           style: const TextStyle(fontSize: 16),
                         ),
                         const SizedBox(height: 8),
-                        Column(
-                          crossAxisAlignment: CrossAxisAlignment.end,
-                          children: [
-                            Text(
-                              email,
-                              style: const TextStyle(fontSize: 16),
-                            ),
-                            Text(
-                              phoneNumber,
-                              style: const TextStyle(fontSize: 16),
-                            ),
-                          ],
-                        ),
                         // Price description
                         Text(
                           ' Min: \MK$price/night', // Assuming the price is in dollars
@@ -103,7 +89,7 @@ class DestinationDetailPage extends StatelessWidget {
                         // Price description
                         Text(
                           description,
-                          style: const TextStyle(fontSize: 16),
+                          style: TextStyle(fontSize: 16),
                         ),
                         const SizedBox(height: 16),
                         // Gallery

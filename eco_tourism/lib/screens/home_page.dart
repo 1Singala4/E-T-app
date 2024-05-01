@@ -1,11 +1,11 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:eco_tourism/forms/tourist_centre_form.dart';
-import 'package:eco_tourism/models/models.dart';
 import 'package:eco_tourism/screens/best_hotels.dart';
-import 'package:eco_tourism/screens/see_all.dart';
+import 'package:eco_tourism/screens/cultural_centres.dart';
+import 'package:eco_tourism/screens/hotels.dart';
+import 'package:eco_tourism/screens/tourist_centres.dart';
+import 'package:eco_tourism/screens/transports.dart';
 import 'package:flutter/material.dart';
 import 'package:carousel_slider/carousel_slider.dart';
-import '../forms/cultural_centres_form.dart';
 import '../widgets/build_slide.dart';
 import '../forms/login_page.dart';
 import 'package:firebase_auth/firebase_auth.dart';
@@ -32,6 +32,19 @@ class _HomePageState extends State<HomePage> {
     'Tourist Destinations',
     'Culture'
   ];
+  Map<String, Widget> categoryWidgets = {
+    "Hotels": const BestHotels(),
+    "Transportation": const BestTransports(),
+    "Tourist Destinations": const BestTouristCentres(),
+    "Culture": const BestCulturalCentres(),
+  };
+  Map<String, Widget> seeAllWidgets = {
+    "Hotels": const Hotels(),
+    "Transportation": const Transports(),
+    "Tourist Destinations": const TouristCentres(),
+    "Culture": const CulturalCentres(),
+  };
+
   String _activeCategory = 'Hotels';
   List<Map<String, dynamic>> hotels = [];
 
@@ -254,8 +267,8 @@ class _HomePageState extends State<HomePage> {
                             Navigator.push(
                               context,
                               MaterialPageRoute(
-                                builder: (context) =>
-                                    const SeeAllPage(), // Replace DestinationDetailPage() with your actual detail page
+                                builder: (context) => seeAllWidgets[
+                                    _activeCategory]!, // Replace DestinationDetailPage() with your actual detail page
                               ),
                             );
                           },
@@ -266,8 +279,8 @@ class _HomePageState extends State<HomePage> {
                     const SizedBox(height: 10),
                     SizedBox(
                       height: MediaQuery.of(context).size.height * 0.245,
-                      child: const Scrollbar(
-                        child: BestHotels(),
+                      child: Scrollbar(
+                        child: categoryWidgets[_activeCategory]!,
                       ),
                     ),
                   ],
