@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_rating_bar/flutter_rating_bar.dart';
 import 'package:intl/intl.dart';
 
+import '../forms/booking_form.dart';
 import 'destination_detail.dart';
 
 class BestHotels extends StatefulWidget {
@@ -157,13 +158,13 @@ class _BestHotelsState extends State<BestHotels> {
                                       onPressed: () {
                                         // _confirmDeleteHotel(
                                         //     context, hotel.id, hotel['imageUrl']);
-                                        Navigator.push(
-                                          context,
-                                          MaterialPageRoute(
-                                            builder: (context) =>
-                                                const HotelForm(), // Replace DestinationDetailPage() with your actual detail page
-                                          ),
-                                        );
+                                        // Navigator.push(
+                                        //   context,
+                                        //   MaterialPageRoute(
+                                        //     builder: (context) =>
+                                        //         BookingForm(), // Replace DestinationDetailPage() with your actual detail page
+                                        //   ),
+                                        // );
                                       },
                                     ),
                                     IconButton(

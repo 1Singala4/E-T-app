@@ -55,14 +55,11 @@ class CulturalCentres extends StatefulWidget {
 
 class _CulturalCentresState extends State<CulturalCentres> {
   late TextEditingController _searchController;
-  late Stream<QuerySnapshot> _cultural_centresStream;
 
   @override
   void initState() {
     super.initState();
     _searchController = TextEditingController();
-    _cultural_centresStream =
-        FirebaseFirestore.instance.collection('cultural_centres').snapshots();
   }
 
   @override
@@ -110,9 +107,9 @@ class _CulturalCentresState extends State<CulturalCentres> {
             );
           }
 
-          final cultural_centres = snapshot.data!.docs;
+          final culturalCentres = snapshot.data!.docs;
 
-          if (cultural_centres.isEmpty) {
+          if (culturalCentres.isEmpty) {
             return const Column(
               children: [
                 SizedBox(
@@ -129,9 +126,9 @@ class _CulturalCentresState extends State<CulturalCentres> {
               crossAxisSpacing: 8.0,
               mainAxisSpacing: 8.0,
             ),
-            itemCount: cultural_centres.length,
+            itemCount: culturalCentres.length,
             itemBuilder: (context, index) {
-              final culturalCentre = cultural_centres[index];
+              final culturalCentre = culturalCentres[index];
               final name = culturalCentre['name'];
               final email = culturalCentre['email'];
               final phoneNumber = culturalCentre['phoneNumber'];
@@ -342,9 +339,9 @@ class _CulturalCentreSearchDelegate extends SearchDelegate<String> {
           );
         }
 
-        final cultural_centres = snapshot.data!.docs;
+        final culturalCentres = snapshot.data!.docs;
 
-        if (cultural_centres.isEmpty) {
+        if (culturalCentres.isEmpty) {
           return const Center(
             child: Text('No CulturalCentre Posted Yet'),
           );
@@ -356,30 +353,36 @@ class _CulturalCentreSearchDelegate extends SearchDelegate<String> {
             crossAxisSpacing: 8.0,
             mainAxisSpacing: 8.0,
           ),
-          itemCount: cultural_centres.length,
+          itemCount: culturalCentres.length,
           itemBuilder: (context, index) {
-            final cultural_centre = cultural_centres[index];
-            final name = cultural_centre['name'];
-            final location = cultural_centre['location'];
-            final price = cultural_centre['price'];
-            final description = cultural_centre['description'];
+            final culturalCentre = culturalCentres[index];
+            final name = culturalCentre['name'];
+            final email = culturalCentre['email'];
+            final phoneNumber = culturalCentre['phoneNumber'];
+            final location = culturalCentre['location'];
+            final price = culturalCentre['price'];
+            final description = culturalCentre['description'];
             final datePosted =
-                (cultural_centre['datePosted'] as Timestamp).toDate();
-            final imageUrl = cultural_centre['imageUrl'];
+                (culturalCentre['datePosted'] as Timestamp).toDate();
+            final imageUrl = culturalCentre['imageUrl'];
 
             return GestureDetector(
               onTap: () {
-                // Navigator.push(
-                //   context,
-                //   MaterialPageRoute(
-                //     builder: (context) => CulturalCentreDetail(
-                //       title: title,
-                //       description: description,
-                //       datePosted: datePosted,
-                //       imageUrl: imageUrl,
-                //     ),
-                //   ),
-                // );
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => DestinationDetailPage(
+                      name: name,
+                      location: location,
+                      price: price,
+                      description: description,
+                      datePosted: datePosted,
+                      imageUrl: imageUrl,
+                      email: email,
+                      phoneNumber: phoneNumber,
+                    ),
+                  ),
+                );
               },
               child: Card(
                 margin: const EdgeInsets.all(8.0),
@@ -437,8 +440,8 @@ class _CulturalCentreSearchDelegate extends SearchDelegate<String> {
                                       onPressed: () {
                                         _confirmDeleteCulturalCentre(
                                             context,
-                                            cultural_centre.id,
-                                            cultural_centre['imageUrl']);
+                                            culturalCentre.id,
+                                            culturalCentre['imageUrl']);
                                       },
                                     ),
                                   ],
@@ -510,17 +513,16 @@ class _CulturalCentreSearchDelegate extends SearchDelegate<String> {
           );
         }
 
-        final cultural_centres = snapshot.data!.docs;
+        final culturalCentres = snapshot.data!.docs;
 
-        if (cultural_centres.isEmpty) {
+        if (culturalCentres.isEmpty) {
           return const Center(
             child: Text('No results found'),
           );
         }
 
-        final filteredCulturalCentres =
-            cultural_centres.where((cultural_centre) {
-          final name = cultural_centre['name'].toString().toLowerCase();
+        final filteredCulturalCentres = culturalCentres.where((culturalCentre) {
+          final name = culturalCentre['name'].toString().toLowerCase();
           return name.contains(query.toLowerCase());
         }).toList();
 
@@ -538,18 +540,34 @@ class _CulturalCentreSearchDelegate extends SearchDelegate<String> {
           ),
           itemCount: filteredCulturalCentres.length,
           itemBuilder: (context, index) {
-            final cultural_centre = filteredCulturalCentres[index];
-            final name = cultural_centre['name'];
-            final location = cultural_centre['location'];
-            final price = cultural_centre['price'];
-            final description = cultural_centre['description'];
+            final culturalCentre = filteredCulturalCentres[index];
+            final name = culturalCentre['name'];
+            final email = culturalCentre['email'];
+            final phoneNumber = culturalCentre['phoneNumber'];
+            final location = culturalCentre['location'];
+            final price = culturalCentre['price'];
+            final description = culturalCentre['description'];
             final datePosted =
-                (cultural_centre['datePosted'] as Timestamp).toDate();
-            final imageUrl = cultural_centre['imageUrl'];
+                (culturalCentre['datePosted'] as Timestamp).toDate();
+            final imageUrl = culturalCentre['imageUrl'];
 
             return GestureDetector(
               onTap: () {
-                // Navigate to cultural_centre detail page
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => DestinationDetailPage(
+                      name: name,
+                      location: location,
+                      price: price,
+                      description: description,
+                      datePosted: datePosted,
+                      imageUrl: imageUrl,
+                      email: email,
+                      phoneNumber: phoneNumber,
+                    ),
+                  ),
+                );
               },
               child: Card(
                 margin: const EdgeInsets.all(8.0),
@@ -599,8 +617,8 @@ class _CulturalCentreSearchDelegate extends SearchDelegate<String> {
                                       onPressed: () {
                                         _confirmDeleteCulturalCentre(
                                             context,
-                                            cultural_centre.id,
-                                            cultural_centre['imageUrl']);
+                                            culturalCentre.id,
+                                            culturalCentre['imageUrl']);
                                       },
                                     ),
                                   ],

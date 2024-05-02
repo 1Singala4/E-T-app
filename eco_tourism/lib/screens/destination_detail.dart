@@ -1,5 +1,8 @@
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/widgets.dart';
+
+import '../forms/booking_form.dart';
+import '../forms/login_page.dart';
 
 class DestinationDetailPage extends StatelessWidget {
   final String name;
@@ -76,26 +79,25 @@ class DestinationDetailPage extends StatelessWidget {
                         const SizedBox(height: 8),
                         // Location
                         Text(
-                          location,
+                          'Location: $location',
                           style: const TextStyle(fontSize: 16),
                         ),
                         const SizedBox(height: 8),
-                        Column(
-                          crossAxisAlignment: CrossAxisAlignment.end,
-                          children: [
-                            Text(
-                              email,
-                              style: const TextStyle(fontSize: 16),
-                            ),
-                            Text(
-                              phoneNumber,
-                              style: const TextStyle(fontSize: 16),
-                            ),
-                          ],
+                        Text(
+                          'Email: $email',
+                          style: const TextStyle(fontSize: 16),
                         ),
+                        const SizedBox(height: 8),
+
+                        Text(
+                          'Phone Number: $phoneNumber',
+                          style: const TextStyle(fontSize: 16),
+                        ),
+                        const SizedBox(height: 8),
+
                         // Price description
                         Text(
-                          ' Min: \MK$price/night', // Assuming the price is in dollars
+                          ' Min: MK$price/night', // Assuming the price is in dollars
                           style: const TextStyle(fontSize: 16),
                         ),
 
@@ -143,20 +145,43 @@ class DestinationDetailPage extends StatelessWidget {
             ],
           ),
           // Floating button
+
           Positioned(
             bottom: 16,
-            left: MediaQuery.of(context).size.width / 2 -
-                150, // Center horizontally
+            left: MediaQuery.of(context).size.width / 2 - 150,
             child: SizedBox(
               width: 300,
               child: ElevatedButton(
-                onPressed: () {},
+                onPressed: () async {
+                  // Check if user is authenticated
+                  User? user = FirebaseAuth.instance.currentUser;
+                  if (user != null) {
+                    String userName =
+                        user.displayName ?? ''; // Retrieve user's display name
+                    String userEmail =
+                        user.email ?? ''; // Retrieve user's email
+                    await Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => BookingForm(
+                          placeName: name,
+                          userName: userName,
+                          userEmail: userEmail,
+                        ),
+                      ),
+                    );
+                  } else {
+                    // If user is not authenticated, navigate to login page
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                          builder: (context) => const LoginPage()),
+                    );
+                  }
+                },
                 style: ElevatedButton.styleFrom(
                   backgroundColor: const Color.fromRGBO(255, 165, 0, 1),
-                  minimumSize: const Size(
-                    320,
-                    50,
-                  ),
+                  minimumSize: const Size(320, 50),
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(8),
                   ),

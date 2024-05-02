@@ -81,7 +81,7 @@ class DestinationDetailPage extends StatelessWidget {
                         const SizedBox(height: 8),
                         // Price description
                         Text(
-                          ' Min: \MK$price/night', // Assuming the price is in dollars
+                          ' Min: MK$price/night', // Assuming the price is in dollars
                           style: const TextStyle(fontSize: 16),
                         ),
 
@@ -89,7 +89,7 @@ class DestinationDetailPage extends StatelessWidget {
                         // Price description
                         Text(
                           description,
-                          style: TextStyle(fontSize: 16),
+                          style: const TextStyle(fontSize: 16),
                         ),
                         const SizedBox(height: 16),
                         // Gallery

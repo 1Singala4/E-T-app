@@ -55,13 +55,11 @@ class Hotels extends StatefulWidget {
 
 class _HotelsState extends State<Hotels> {
   late TextEditingController _searchController;
-  late Stream<QuerySnapshot> _hotelsStream;
 
   @override
   void initState() {
     super.initState();
     _searchController = TextEditingController();
-    _hotelsStream = FirebaseFirestore.instance.collection('hotels').snapshots();
   }
 
   @override

@@ -1,14 +1,14 @@
 import 'package:flutter/material.dart';
 
-class FavoritesPage extends StatefulWidget {
-  const FavoritesPage({super.key});
+class BookingsPage extends StatefulWidget {
+  const BookingsPage({super.key});
 
   @override
   // ignore: library_private_types_in_public_api
-  _FavoritesPageState createState() => _FavoritesPageState();
+  _BookingsPageState createState() => _BookingsPageState();
 }
 
-class _FavoritesPageState extends State<FavoritesPage> {
+class _BookingsPageState extends State<BookingsPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(

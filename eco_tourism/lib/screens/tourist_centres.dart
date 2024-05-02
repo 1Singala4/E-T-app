@@ -56,14 +56,11 @@ class TouristCentres extends StatefulWidget {
 
 class _TouristCentresState extends State<TouristCentres> {
   late TextEditingController _searchController;
-  late Stream<QuerySnapshot> _tourist_centresStream;
 
   @override
   void initState() {
     super.initState();
     _searchController = TextEditingController();
-    _tourist_centresStream =
-        FirebaseFirestore.instance.collection('tourist_centres').snapshots();
   }
 
   @override
@@ -111,9 +108,9 @@ class _TouristCentresState extends State<TouristCentres> {
             );
           }
 
-          final tourist_centres = snapshot.data!.docs;
+          final touristCentres = snapshot.data!.docs;
 
-          if (tourist_centres.isEmpty) {
+          if (touristCentres.isEmpty) {
             return const Column(
               children: [
                 SizedBox(
@@ -130,18 +127,18 @@ class _TouristCentresState extends State<TouristCentres> {
               crossAxisSpacing: 8.0,
               mainAxisSpacing: 8.0,
             ),
-            itemCount: tourist_centres.length,
+            itemCount: touristCentres.length,
             itemBuilder: (context, index) {
-              final tourist_centre = tourist_centres[index];
-              final name = tourist_centre['name'];
-              final email = tourist_centre['email'];
-              final phoneNumber = tourist_centre['phoneNumber'];
-              final location = tourist_centre['location'];
-              final price = tourist_centre['price'];
-              final description = tourist_centre['description'];
+              final touristCentre = touristCentres[index];
+              final name = touristCentre['name'];
+              final email = touristCentre['email'];
+              final phoneNumber = touristCentre['phoneNumber'];
+              final location = touristCentre['location'];
+              final price = touristCentre['price'];
+              final description = touristCentre['description'];
               final datePosted =
-                  (tourist_centre['datePosted'] as Timestamp).toDate();
-              final imageUrl = tourist_centre['imageUrl'];
+                  (touristCentre['datePosted'] as Timestamp).toDate();
+              final imageUrl = touristCentre['imageUrl'];
 
               return GestureDetector(
                 onTap: () {
@@ -218,8 +215,8 @@ class _TouristCentresState extends State<TouristCentres> {
                                         onPressed: () {
                                           _confirmDeleteTouristCentre(
                                               context,
-                                              tourist_centre.id,
-                                              tourist_centre['imageUrl']);
+                                              touristCentre.id,
+                                              touristCentre['imageUrl']);
                                         },
                                       ),
                                     ],
@@ -343,9 +340,9 @@ class _TouristCentreSearchDelegate extends SearchDelegate<String> {
           );
         }
 
-        final tourist_centres = snapshot.data!.docs;
+        final touristCentres = snapshot.data!.docs;
 
-        if (tourist_centres.isEmpty) {
+        if (touristCentres.isEmpty) {
           return const Center(
             child: Text('No TouristCentre Posted Yet'),
           );
@@ -357,9 +354,9 @@ class _TouristCentreSearchDelegate extends SearchDelegate<String> {
             crossAxisSpacing: 8.0,
             mainAxisSpacing: 8.0,
           ),
-          itemCount: tourist_centres.length,
+          itemCount: touristCentres.length,
           itemBuilder: (context, index) {
-            final touristCentre = tourist_centres[index];
+            final touristCentre = touristCentres[index];
             final name = touristCentre['name'];
             final email = touristCentre['email'];
             final phoneNumber = touristCentre['phoneNumber'];
@@ -517,16 +514,16 @@ class _TouristCentreSearchDelegate extends SearchDelegate<String> {
           );
         }
 
-        final tourist_centres = snapshot.data!.docs;
+        final touristCentres = snapshot.data!.docs;
 
-        if (tourist_centres.isEmpty) {
+        if (touristCentres.isEmpty) {
           return const Center(
             child: Text('No results found'),
           );
         }
 
-        final filteredTouristCentres = tourist_centres.where((tourist_centre) {
-          final name = tourist_centre['name'].toString().toLowerCase();
+        final filteredTouristCentres = touristCentres.where((touristCentre) {
+          final name = touristCentre['name'].toString().toLowerCase();
           return name.contains(query.toLowerCase());
         }).toList();
 

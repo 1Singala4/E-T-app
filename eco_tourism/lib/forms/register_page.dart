@@ -5,7 +5,7 @@ import '../user_auth/firebase_auth_implementation/firebase_auth_services.dart';
 import '../screens/home_page.dart';
 
 class SignupPage extends StatefulWidget {
-  const SignupPage({super.key});
+  const SignupPage({Key? key});
 
   @override
   State<SignupPage> createState() => _SignupPageState();
@@ -34,10 +34,10 @@ class _SignupPageState extends State<SignupPage> {
     return MaterialApp(
       debugShowCheckedModeBanner: false,
       home: Scaffold(
-        body: Stack(
-          children: [
-            SingleChildScrollView(
-              child: Container(
+        body: SingleChildScrollView(
+          child: Stack(
+            children: [
+              Container(
                 padding: const EdgeInsets.symmetric(horizontal: 40),
                 height: MediaQuery.of(context).size.height - 50,
                 width: double.infinity,
@@ -172,15 +172,15 @@ class _SignupPageState extends State<SignupPage> {
                   ],
                 ),
               ),
-            ),
-            if (_isLoading)
-              Container(
-                color: Colors.black.withOpacity(0.5),
-                child: const Center(
-                  child: CircularProgressIndicator(),
+              if (_isLoading)
+                Container(
+                  color: Colors.black.withOpacity(0.5),
+                  child: const Center(
+                    child: CircularProgressIndicator(),
+                  ),
                 ),
-              ),
-          ],
+            ],
+          ),
         ),
       ),
     );

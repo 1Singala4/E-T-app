@@ -1,4 +1,5 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:eco_tourism/screens/destination_detail.dart';
 
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/material.dart';
@@ -74,9 +75,9 @@ class _BestCulturalCentresState extends State<BestCulturalCentres> {
           );
         }
 
-        final cultural_centres = snapshot.data!.docs;
+        final culturalCentres = snapshot.data!.docs;
 
-        if (cultural_centres.isEmpty) {
+        if (culturalCentres.isEmpty) {
           return const Column(
             children: [
               SizedBox(height: 16),
@@ -89,31 +90,36 @@ class _BestCulturalCentresState extends State<BestCulturalCentres> {
 
         return ListView.builder(
           scrollDirection: Axis.horizontal,
-          itemCount: cultural_centres.length,
+          itemCount: culturalCentres.length,
           itemBuilder: (context, index) {
-            final cultural_centre = cultural_centres[index];
-            final name = cultural_centre['name'];
-            final location = cultural_centre['location'];
-            final price = cultural_centre['price'];
-            final description = cultural_centre['description'];
+            final culturalCentre = culturalCentres[index];
+            final name = culturalCentre['name'];
+            final email = culturalCentre['email'];
+            final phoneNumber = culturalCentre['phoneNumber'];
+            final location = culturalCentre['location'];
+            final price = culturalCentre['price'];
+            final description = culturalCentre['description'];
             final datePosted =
-                (cultural_centre['datePosted'] as Timestamp).toDate();
-            final imageUrl = cultural_centre['imageUrl'];
+                (culturalCentre['datePosted'] as Timestamp).toDate();
+            final imageUrl = culturalCentre['imageUrl'];
 
             return GestureDetector(
               onTap: () {
-                // Navigator.push(
-                //   context,
-                //   MaterialPageRoute(
-                //     builder: (context) => HotelDetails(
-                //       title: title,
-                //       description: description,
-                //       datePosted:
-                //           datePosted, // Use datePosted instead of datePosted
-                //       imageUrl: imageUrl,
-                //     ),
-                //   ),
-                // );
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => DestinationDetailPage(
+                      name: name,
+                      location: location,
+                      price: price,
+                      description: description,
+                      datePosted: datePosted,
+                      imageUrl: imageUrl,
+                      email: email,
+                      phoneNumber: phoneNumber,
+                    ),
+                  ),
+                );
               },
               child: Card(
                 margin: const EdgeInsets.all(8.0),
@@ -173,8 +179,8 @@ class _BestCulturalCentresState extends State<BestCulturalCentres> {
                                       onPressed: () {
                                         _confirmDeleteHotel(
                                             context,
-                                            cultural_centre.id,
-                                            cultural_centre['imageUrl']);
+                                            culturalCentre.id,
+                                            culturalCentre['imageUrl']);
                                       },
                                     ),
                                   ],

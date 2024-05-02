@@ -15,7 +15,7 @@ class _NavBarState extends State<NavBar> {
   int _selectedIndex = 0;
   static final List<Widget> _pages = <Widget>[
     const HomePage(),
-    const FavoritesPage(),
+    const BookingsPage(),
     const AboutPage(),
     const ProfilePage(),
   ];
@@ -31,8 +31,8 @@ class _NavBarState extends State<NavBar> {
             label: 'Home',
           ),
           BottomNavigationBarItem(
-            icon: Icon(Icons.favorite),
-            label: 'Favorites',
+            icon: Icon(Icons.event_seat),
+            label: 'Bookings',
           ),
           BottomNavigationBarItem(
             icon: Icon(Icons.person),

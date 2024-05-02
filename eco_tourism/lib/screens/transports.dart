@@ -54,14 +54,11 @@ class Transports extends StatefulWidget {
 
 class _TransportsState extends State<Transports> {
   late TextEditingController _searchController;
-  late Stream<QuerySnapshot> _transportsStream;
 
   @override
   void initState() {
     super.initState();
     _searchController = TextEditingController();
-    _transportsStream =
-        FirebaseFirestore.instance.collection('transports').snapshots();
   }
 
   @override
