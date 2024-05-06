@@ -1,12 +1,10 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:eco_tourism/screens/transport_detail.dart';
+import 'package:eco_tourism/screens/transport/transport_detail.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_rating_bar/flutter_rating_bar.dart';
 import 'package:intl/intl.dart';
-
-import '../forms/transport_form.dart';
 
 class BestTransports extends StatefulWidget {
   const BestTransports({super.key});
@@ -208,9 +206,7 @@ class _BestTransportsState extends State<BestTransports> {
                                         color: Colors.amber,
                                       ),
                                       unratedColor: Colors.white,
-                                      onRatingUpdate: (rating) {
-                                        print(rating);
-                                      },
+                                      onRatingUpdate: (rating) {},
                                     ),
                                     Text(
                                       name,

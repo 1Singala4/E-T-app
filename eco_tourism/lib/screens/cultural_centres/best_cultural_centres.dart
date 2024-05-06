@@ -210,7 +210,6 @@ class _BestCulturalCentresState extends State<BestCulturalCentres> {
                                       ),
                                       unratedColor: Colors.white,
                                       onRatingUpdate: (rating) {
-                                        print(rating);
                                       },
                                     ),
                                     Text(

@@ -171,11 +171,14 @@ class _SignupPageState extends State<SignupPage> {
                   ],
                 ),
               ),
+              // Wrap the Center widget with another Center widget and place it at the bottom of the Stack
               if (_isLoading)
-                Container(
-                  color: Colors.black.withOpacity(0.5),
-                  child: const Center(
-                    child: CircularProgressIndicator(),
+                Center(
+                  child: Container(
+                    color: Colors.black.withOpacity(0.5),
+                    child: const Center(
+                      child: CircularProgressIndicator(),
+                    ),
                   ),
                 ),
             ],

@@ -1,11 +1,11 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:eco_tourism/forms/tourist_centre_form.dart';
 import 'package:eco_tourism/screens/destination_detail.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_rating_bar/flutter_rating_bar.dart';
 import 'package:intl/intl.dart';
-
-import '../forms/tourist_centre_form.dart';
 
 void _confirmDeleteTouristCentre(
     BuildContext context, String documentId, String? imageUrl) {
@@ -56,11 +56,27 @@ class TouristCentres extends StatefulWidget {
 
 class _TouristCentresState extends State<TouristCentres> {
   late TextEditingController _searchController;
+  late User? _currentUser;
+  late String _userType = '';
 
   @override
   void initState() {
     super.initState();
+    _currentUser = FirebaseAuth.instance.currentUser;
+    _fetchUserType();
     _searchController = TextEditingController();
+  }
+
+  Future<void> _fetchUserType() async {
+    if (_currentUser != null) {
+      final doc = await FirebaseFirestore.instance
+          .collection('users')
+          .doc(_currentUser!.uid)
+          .get();
+      setState(() {
+        _userType = doc['userType'];
+      });
+    }
   }
 
   @override
@@ -71,18 +87,29 @@ class _TouristCentresState extends State<TouristCentres> {
 
   @override
   Widget build(BuildContext context) {
+    final bool showAddButton = _currentUser != null && _userType == 'admin';
     return Scaffold(
       appBar: AppBar(
         automaticallyImplyLeading: false,
-        backgroundColor: const Color.fromRGBO(238, 238, 238, 1),
+        elevation: 1,
+
+        backgroundColor: const Color.fromRGBO(1, 142, 1, 1),
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back),
+          onPressed: () {
+            Navigator.of(context).pop(); // Navigate back when pressed
+          },
+          color: Colors.white, // Set the color of the arrow to white
+        ),
+
         // titleSpacing: 1,
         title: const Text(
-          "TouristCentres",
-          style: TextStyle(fontWeight: FontWeight.bold),
+          "Tourist Centres",
+          style: TextStyle(fontWeight: FontWeight.bold, color: Colors.white),
         ),
         actions: [
           IconButton(
-            icon: const Icon(Icons.search),
+            icon: const Icon(Icons.search, color: Colors.white),
             onPressed: () {
               showSearch(
                   context: context, delegate: _TouristCentreSearchDelegate());
@@ -90,184 +117,208 @@ class _TouristCentresState extends State<TouristCentres> {
           ),
         ],
       ),
-      body: StreamBuilder(
-        stream: FirebaseFirestore.instance
-            .collection('tourist_centres')
-            .snapshots(),
-        builder: (context, AsyncSnapshot<QuerySnapshot> snapshot) {
-          if (snapshot.connectionState == ConnectionState.waiting) {
-            return const Center(
-              child: CircularProgressIndicator(),
-            );
-          }
-
-          if (snapshot.hasError) {
-            return const Center(
-              child: Text(
-                  'Error fetching data. Please check your network connection.'),
-            );
-          }
-
-          final touristCentres = snapshot.data!.docs;
-
-          if (touristCentres.isEmpty) {
-            return const Column(
-              children: [
-                SizedBox(
-                  height: 20,
-                ),
-                Text('No TouristCentre Posted Yet'),
-              ],
-            );
-          }
-
-          return GridView.builder(
-            gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-              crossAxisCount: 2,
-              crossAxisSpacing: 8.0,
-              mainAxisSpacing: 8.0,
-            ),
-            itemCount: touristCentres.length,
-            itemBuilder: (context, index) {
-              final touristCentre = touristCentres[index];
-              final name = touristCentre['name'];
-              final email = touristCentre['email'];
-              final phoneNumber = touristCentre['phoneNumber'];
-              final location = touristCentre['location'];
-              final price = touristCentre['price'];
-              final description = touristCentre['description'];
-              final datePosted =
-                  (touristCentre['datePosted'] as Timestamp).toDate();
-              final imageUrl = touristCentre['imageUrl'];
-
-              return GestureDetector(
-                onTap: () {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (context) => DestinationDetailPage(
-                        name: name,
-                        email: email,
-                        phoneNumber: phoneNumber,
-                        location: location,
-                        price: price,
-                        description: description,
-                        datePosted: datePosted,
-                        imageUrl: imageUrl,
+      body: Column(
+        children: [
+          const SizedBox(
+            height: 15,
+          ),
+          if (showAddButton)
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 16.0),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.end,
+                children: [
+                  TextButton(
+                    onPressed: () {
+                      // Navigate to the screen where hotels can be added
+                      // Replace 'DestinationDetailPage' with the appropriate screen
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => const TouristCentresForm(),
+                        ),
+                      );
+                    },
+                    child: const Text(
+                      'Add Tourist Centre',
+                      style: TextStyle(
+                        color: Colors.blue,
+                        fontWeight: FontWeight.bold,
                       ),
                     ),
+                  ),
+                ],
+              ),
+            ),
+          Expanded(
+            child: StreamBuilder(
+              stream: FirebaseFirestore.instance
+                  .collection('tourist_centres')
+                  .snapshots(),
+              builder: (context, AsyncSnapshot<QuerySnapshot> snapshot) {
+                if (snapshot.connectionState == ConnectionState.waiting) {
+                  return const Center(
+                    child: CircularProgressIndicator(),
                   );
-                },
-                child: Card(
-                  margin: const EdgeInsets.all(8.0),
-                  child: SizedBox(
-                    width: MediaQuery.of(context).size.width / 2 - 20,
-                    child: ClipRRect(
-                      borderRadius: BorderRadius.circular(10.0),
-                      child: Container(
-                        decoration: BoxDecoration(
-                          image: DecorationImage(
-                            image: NetworkImage(imageUrl),
-                            fit: BoxFit.cover,
-                          ),
-                        ),
-                        child: Stack(
-                          children: [
-                            Container(
-                              decoration: BoxDecoration(
-                                color: Colors.black.withOpacity(0.4),
-                              ),
+                }
+
+                if (snapshot.hasError) {
+                  return const Center(
+                    child: Text(
+                        'Error fetching data. Please check your network connection.'),
+                  );
+                }
+
+                final touristCentres = snapshot.data!.docs;
+
+                if (touristCentres.isEmpty) {
+                  return const Column(
+                    children: [
+                      SizedBox(
+                        height: 20,
+                      ),
+                      Text('No TouristCentre Posted Yet'),
+                    ],
+                  );
+                }
+
+                return GridView.builder(
+                  gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                    crossAxisCount: 2,
+                    crossAxisSpacing: 8.0,
+                    mainAxisSpacing: 8.0,
+                  ),
+                  itemCount: touristCentres.length,
+                  itemBuilder: (context, index) {
+                    final touristCentre = touristCentres[index];
+                    final name = touristCentre['name'];
+                    final email = touristCentre['email'];
+                    final phoneNumber = touristCentre['phoneNumber'];
+                    final location = touristCentre['location'];
+                    final price = touristCentre['price'];
+                    final description = touristCentre['description'];
+                    final datePosted =
+                        (touristCentre['datePosted'] as Timestamp).toDate();
+                    final imageUrl = touristCentre['imageUrl'];
+
+                    return GestureDetector(
+                      onTap: () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => DestinationDetailPage(
+                              name: name,
+                              email: email,
+                              phoneNumber: phoneNumber,
+                              location: location,
+                              price: price,
+                              description: description,
+                              datePosted: datePosted,
+                              imageUrl: imageUrl,
                             ),
-                            Container(
-                              padding: const EdgeInsets.all(8.0),
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                mainAxisAlignment:
-                                    MainAxisAlignment.spaceBetween,
+                          ),
+                        );
+                      },
+                      child: Card(
+                        margin: const EdgeInsets.all(8.0),
+                        child: SizedBox(
+                          width: MediaQuery.of(context).size.width / 2 - 20,
+                          child: ClipRRect(
+                            borderRadius: BorderRadius.circular(10.0),
+                            child: Container(
+                              decoration: BoxDecoration(
+                                image: DecorationImage(
+                                  image: NetworkImage(imageUrl),
+                                  fit: BoxFit.cover,
+                                ),
+                              ),
+                              child: Stack(
                                 children: [
-                                  Row(
-                                    mainAxisAlignment: MainAxisAlignment.end,
-                                    children: [
-                                      IconButton(
-                                        tooltip: 'Add to Favorites',
-                                        icon: const Icon(
-                                          Icons.favorite_border_outlined,
-                                          color: Colors.red,
-                                        ),
-                                        onPressed: () {
-                                          // _confirmDeleteTouristCentre(
-                                          //     context, tourist_centre.id, tourist_centre['imageUrl']);
-                                          Navigator.push(
-                                            context,
-                                            MaterialPageRoute(
-                                              builder: (context) =>
-                                                  const TouristCentresForm(),
-                                            ),
-                                          );
-                                        },
-                                      ),
-                                      IconButton(
-                                        tooltip: 'Delete TouristCentre',
-                                        icon: const Icon(
-                                          Icons.delete,
-                                          color: Colors.red,
-                                        ),
-                                        onPressed: () {
-                                          _confirmDeleteTouristCentre(
-                                              context,
-                                              touristCentre.id,
-                                              touristCentre['imageUrl']);
-                                        },
-                                      ),
-                                    ],
+                                  Container(
+                                    decoration: BoxDecoration(
+                                      color: Colors.black.withOpacity(0.4),
+                                    ),
                                   ),
-                                  Column(
-                                    mainAxisAlignment: MainAxisAlignment.end,
-                                    crossAxisAlignment:
-                                        CrossAxisAlignment.start,
-                                    children: [
-                                      RatingBar.builder(
-                                        initialRating: 2,
-                                        minRating: 1,
-                                        direction: Axis.horizontal,
-                                        allowHalfRating: true,
-                                        itemCount: 5,
-                                        itemSize: 20,
-                                        itemPadding: const EdgeInsets.symmetric(
-                                            horizontal: 4),
-                                        itemBuilder: (context, _) => const Icon(
-                                          Icons.star,
-                                          color: Colors.amber,
+                                  Container(
+                                    padding: const EdgeInsets.all(8.0),
+                                    child: Column(
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.start,
+                                      mainAxisAlignment:
+                                          MainAxisAlignment.spaceBetween,
+                                      children: [
+                                        Row(
+                                          mainAxisAlignment:
+                                              MainAxisAlignment.end,
+                                          children: [
+                                            if (showAddButton)
+                                              IconButton(
+                                                tooltip: 'Delete TouristCentre',
+                                                icon: const Icon(
+                                                  Icons.delete,
+                                                  color: Colors.red,
+                                                ),
+                                                onPressed: () {
+                                                  _confirmDeleteTouristCentre(
+                                                      context,
+                                                      touristCentre.id,
+                                                      touristCentre[
+                                                          'imageUrl']);
+                                                },
+                                              ),
+                                          ],
                                         ),
-                                        unratedColor: Colors.white,
-                                        onRatingUpdate: (rating) {
-                                          print(rating);
-                                        },
-                                      ),
-                                      Text(
-                                        name,
-                                        style: const TextStyle(
-                                          overflow: TextOverflow.ellipsis,
-                                          fontSize: 20.0,
-                                          fontWeight: FontWeight.bold,
-                                          color: Colors.white,
+                                        Column(
+                                          mainAxisAlignment:
+                                              MainAxisAlignment.end,
+                                          crossAxisAlignment:
+                                              CrossAxisAlignment.start,
+                                          children: [
+                                            RatingBar.builder(
+                                              initialRating: 2,
+                                              minRating: 1,
+                                              direction: Axis.horizontal,
+                                              allowHalfRating: true,
+                                              itemCount: 5,
+                                              itemSize: 20,
+                                              itemPadding:
+                                                  const EdgeInsets.symmetric(
+                                                      horizontal: 4),
+                                              itemBuilder: (context, _) =>
+                                                  const Icon(
+                                                Icons.star,
+                                                color: Colors.amber,
+                                              ),
+                                              unratedColor: Colors.white,
+                                              onRatingUpdate: (rating) {},
+                                            ),
+                                            Text(
+                                              name,
+                                              style: const TextStyle(
+                                                overflow: TextOverflow.ellipsis,
+                                                fontSize: 20.0,
+                                                fontWeight: FontWeight.bold,
+                                                color: Colors.white,
+                                              ),
+                                            ),
+                                          ],
                                         ),
-                                      ),
-                                    ],
+                                      ],
+                                    ),
                                   ),
                                 ],
                               ),
                             ),
-                          ],
+                          ),
                         ),
                       ),
-                    ),
-                  ),
-                ),
-              );
-            },
-          );
-        },
+                    );
+                  },
+                );
+              },
+            ),
+          ),
+        ],
       ),
     );
   }
@@ -415,24 +466,6 @@ class _TouristCentreSearchDelegate extends SearchDelegate<String> {
                                   mainAxisAlignment: MainAxisAlignment.end,
                                   children: [
                                     IconButton(
-                                      tooltip: 'Add to Favorites',
-                                      icon: const Icon(
-                                        Icons.favorite_border_outlined,
-                                        color: Colors.red,
-                                      ),
-                                      onPressed: () {
-                                        // _confirmDeleteTouristCentre(
-                                        //     context, tourist_centre.id, tourist_centre['imageUrl']);
-                                        Navigator.push(
-                                          context,
-                                          MaterialPageRoute(
-                                            builder: (context) =>
-                                                const TouristCentresForm(),
-                                          ),
-                                        );
-                                      },
-                                    ),
-                                    IconButton(
                                       tooltip: 'Delete TouristCentre',
                                       icon: const Icon(
                                         Icons.delete,
@@ -465,9 +498,7 @@ class _TouristCentreSearchDelegate extends SearchDelegate<String> {
                                         color: Colors.amber,
                                       ),
                                       unratedColor: Colors.white,
-                                      onRatingUpdate: (rating) {
-                                        print(rating);
-                                      },
+                                      onRatingUpdate: (rating) {},
                                     ),
                                     Text(
                                       name,
@@ -601,16 +632,6 @@ class _TouristCentreSearchDelegate extends SearchDelegate<String> {
                                   mainAxisAlignment: MainAxisAlignment.end,
                                   children: [
                                     IconButton(
-                                      tooltip: 'Add to Favorites',
-                                      icon: const Icon(
-                                        Icons.favorite_border_outlined,
-                                        color: Colors.red,
-                                      ),
-                                      onPressed: () {
-                                        // Add to favorites functionality
-                                      },
-                                    ),
-                                    IconButton(
                                       tooltip: 'Delete TouristCentre',
                                       icon: const Icon(
                                         Icons.delete,
@@ -643,9 +664,7 @@ class _TouristCentreSearchDelegate extends SearchDelegate<String> {
                                         color: Colors.amber,
                                       ),
                                       unratedColor: Colors.white,
-                                      onRatingUpdate: (rating) {
-                                        print(rating);
-                                      },
+                                      onRatingUpdate: (rating) {},
                                     ),
                                     Text(
                                       name,

@@ -218,7 +218,6 @@ class DestinationDetailPage extends StatelessWidget {
 
       return userName;
     } catch (e) {
-      print('Error retrieving username: $e');
       return '';
     }
   }

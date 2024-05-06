@@ -1,20 +1,19 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:eco_tourism/screens/destination_detail.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_rating_bar/flutter_rating_bar.dart';
 import 'package:intl/intl.dart';
 
-import 'destination_detail.dart';
-
-class BestHotels extends StatefulWidget {
-  const BestHotels({super.key});
+class BestTouristCentres extends StatefulWidget {
+  const BestTouristCentres({super.key});
 
   @override
-  State<BestHotels> createState() => _BestHotelsState();
+  State<BestTouristCentres> createState() => _BestTouristCentresState();
 }
 
-class _BestHotelsState extends State<BestHotels> {
+class _BestTouristCentresState extends State<BestTouristCentres> {
   late User? _currentUser;
   late String _userType = '';
 
@@ -44,7 +43,8 @@ class _BestHotelsState extends State<BestHotels> {
       builder: (BuildContext context) {
         return AlertDialog(
           title: const Text('Confirm Delete'),
-          content: const Text('Are you sure you want to delete this hotel?'),
+          content: const Text(
+              'Are you sure you want to delete this tourist_centre?'),
           actions: <Widget>[
             TextButton(
               onPressed: () {
@@ -67,7 +67,7 @@ class _BestHotelsState extends State<BestHotels> {
 
   void _deleteHotel(String documentId, String? imageUrl) async {
     await FirebaseFirestore.instance
-        .collection('hotels')
+        .collection('tourist_centres')
         .doc(documentId)
         .delete();
 
@@ -79,7 +79,8 @@ class _BestHotelsState extends State<BestHotels> {
   @override
   Widget build(BuildContext context) {
     return StreamBuilder(
-      stream: FirebaseFirestore.instance.collection('hotels').snapshots(),
+      stream:
+          FirebaseFirestore.instance.collection('tourist_centres').snapshots(),
       builder: (context, AsyncSnapshot<QuerySnapshot> snapshot) {
         if (snapshot.connectionState == ConnectionState.waiting) {
           return const Center(
@@ -94,9 +95,9 @@ class _BestHotelsState extends State<BestHotels> {
           );
         }
 
-        final hotels = snapshot.data!.docs;
+        final touristCentres = snapshot.data!.docs;
 
-        if (hotels.isEmpty) {
+        if (touristCentres.isEmpty) {
           return const Column(
             children: [
               SizedBox(height: 16),
@@ -109,19 +110,21 @@ class _BestHotelsState extends State<BestHotels> {
 
         return ListView.builder(
           scrollDirection: Axis.horizontal,
-          itemCount: hotels.length,
+          itemCount: touristCentres.length,
           itemBuilder: (context, index) {
-            final hotel = hotels[index];
-            final name = hotel['name'];
-            final email = hotel['email'];
-            final phoneNumber = hotel['phoneNumber'];
-            final location = hotel['location'];
-            final price = hotel['price'];
-            final description = hotel['description'];
-            final datePosted = (hotel['datePosted'] as Timestamp).toDate();
-            final imageUrl = hotel['imageUrl'];
+            final touristCentre = touristCentres[index];
+            final name = touristCentre['name'];
+            final email = touristCentre['email'];
+            final phoneNumber = touristCentre['phoneNumber'];
+            final location = touristCentre['location'];
+            final price = touristCentre['price'];
+            final description = touristCentre['description'];
+            final datePosted =
+                (touristCentre['datePosted'] as Timestamp).toDate();
+            final imageUrl = touristCentre['imageUrl'];
             final bool showDeleteIcon =
                 _currentUser != null && _userType == 'admin';
+
             return GestureDetector(
               onTap: () {
                 Navigator.push(
@@ -129,13 +132,13 @@ class _BestHotelsState extends State<BestHotels> {
                   MaterialPageRoute(
                     builder: (context) => DestinationDetailPage(
                       name: name,
+                      email: email,
+                      phoneNumber: phoneNumber,
                       location: location,
                       price: price,
                       description: description,
                       datePosted: datePosted,
                       imageUrl: imageUrl,
-                      email: email,
-                      phoneNumber: phoneNumber,
                     ),
                   ),
                 );
@@ -179,8 +182,10 @@ class _BestHotelsState extends State<BestHotels> {
                                           color: Colors.red,
                                         ),
                                         onPressed: () {
-                                          _confirmDeleteHotel(context, hotel.id,
-                                              hotel['imageUrl']);
+                                          _confirmDeleteHotel(
+                                              context,
+                                              touristCentre.id,
+                                              touristCentre['imageUrl']);
                                         },
                                       ),
                                   ],
@@ -203,9 +208,7 @@ class _BestHotelsState extends State<BestHotels> {
                                         color: Colors.amber,
                                       ),
                                       unratedColor: Colors.white,
-                                      onRatingUpdate: (rating) {
-                                        print(rating);
-                                      },
+                                      onRatingUpdate: (rating) {},
                                     ),
                                     Text(
                                       name,

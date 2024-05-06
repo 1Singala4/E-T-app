@@ -265,7 +265,6 @@ class _BookingFormState extends State<BookingForm> {
         },
       );
     }).catchError((error) {
-      print('Error: $error');
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
           content: Text('An error occurred. Please try again later.'),

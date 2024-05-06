@@ -1,18 +1,18 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:eco_tourism/screens/best_hotels.dart';
-import 'package:eco_tourism/screens/cultural_centres.dart';
-import 'package:eco_tourism/screens/hotels.dart';
-import 'package:eco_tourism/screens/tourist_centres.dart';
-import 'package:eco_tourism/screens/transports.dart';
+import 'package:eco_tourism/screens/hotels/best_hotels.dart';
+import 'package:eco_tourism/screens/cultural_centres/cultural_centres.dart';
+import 'package:eco_tourism/screens/hotels/hotels.dart';
+import 'package:eco_tourism/screens/tourist_centres/tourist_centres.dart';
+import 'package:eco_tourism/screens/transport/transports.dart';
 import 'package:flutter/material.dart';
 import 'package:carousel_slider/carousel_slider.dart';
 import '../widgets/build_slide.dart';
 import '../forms/login_page.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 
-import 'best_cultural_centres.dart';
-import 'best_tourist_centres.dart';
-import 'best_transports.dart';
+import 'cultural_centres/best_cultural_centres.dart';
+import 'tourist_centres/best_tourist_centres.dart';
+import 'transport/best_transports.dart';
 
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
@@ -29,20 +29,20 @@ class _HomePageState extends State<HomePage> {
   final List<String> _categories = [
     'Hotels',
     'Transportation',
-    'Tourist Destinations',
-    'Culture'
+    'Tourist Centres',
+    'Cultural Centres'
   ];
   Map<String, Widget> categoryWidgets = {
     "Hotels": const BestHotels(),
     "Transportation": const BestTransports(),
-    "Tourist Destinations": const BestTouristCentres(),
-    "Culture": const BestCulturalCentres(),
+    "Tourist Centres": const BestTouristCentres(),
+    "Cultural Centres": const BestCulturalCentres(),
   };
   Map<String, Widget> seeAllWidgets = {
     "Hotels": const Hotels(),
     "Transportation": const Transports(),
-    "Tourist Destinations": const TouristCentres(),
-    "Culture": const CulturalCentres(),
+    "Tourist Centres": const TouristCentres(),
+    "Cultural Centres": const CulturalCentres(),
   };
 
   String _activeCategory = 'Hotels';
@@ -166,11 +166,11 @@ class _HomePageState extends State<HomePage> {
                         ),
                         buildSlide(
                           'images/wildlife.jpg',
-                          'Slide 2 Title',
+                          'Amazing Wildlife',
                         ),
                         buildSlide(
                           'images/Lake-Malawi.jpg',
-                          'Slide 3 Title',
+                          'Beuty of Lake Malawi',
                         ),
                       ],
                       options: CarouselOptions(

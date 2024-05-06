@@ -1,19 +1,21 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:eco_tourism/screens/transport_detail.dart';
+import 'package:eco_tourism/screens/destination_detail.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_rating_bar/flutter_rating_bar.dart';
 import 'package:intl/intl.dart';
-import '../forms/transport_form.dart';
 
-void _confirmDeleteTransport(
+import '../../forms/hotel_form.dart';
+
+void _confirmDeleteHotel(
     BuildContext context, String documentId, String? imageUrl) {
   showDialog(
     context: context,
     builder: (BuildContext context) {
       return AlertDialog(
         title: const Text('Confirm Delete'),
-        content: const Text('Are you sure you want to delete this transport?'),
+        content: const Text('Are you sure you want to delete this hotel?'),
         actions: <Widget>[
           TextButton(
             onPressed: () {
@@ -23,7 +25,7 @@ void _confirmDeleteTransport(
           ),
           TextButton(
             onPressed: () {
-              _deleteTransport(documentId, imageUrl);
+              _deleteHotel(documentId, imageUrl);
               Navigator.of(context).pop();
             },
             child: const Text('Delete'),
@@ -34,9 +36,9 @@ void _confirmDeleteTransport(
   );
 }
 
-void _deleteTransport(String documentId, String? imageUrl) async {
+void _deleteHotel(String documentId, String? imageUrl) async {
   await FirebaseFirestore.instance
-      .collection('transports')
+      .collection('hotels')
       .doc(documentId)
       .delete();
 
@@ -45,20 +47,36 @@ void _deleteTransport(String documentId, String? imageUrl) async {
   }
 }
 
-class Transports extends StatefulWidget {
-  const Transports({super.key});
+class Hotels extends StatefulWidget {
+  const Hotels({super.key});
 
   @override
-  State<Transports> createState() => _TransportsState();
+  State<Hotels> createState() => _HotelsState();
 }
 
-class _TransportsState extends State<Transports> {
+class _HotelsState extends State<Hotels> {
   late TextEditingController _searchController;
+  late User? _currentUser;
+  late String _userType = '';
 
   @override
   void initState() {
     super.initState();
+    _currentUser = FirebaseAuth.instance.currentUser;
+    _fetchUserType();
     _searchController = TextEditingController();
+  }
+
+  Future<void> _fetchUserType() async {
+    if (_currentUser != null) {
+      final doc = await FirebaseFirestore.instance
+          .collection('users')
+          .doc(_currentUser!.uid)
+          .get();
+      setState(() {
+        _userType = doc['userType'];
+      });
+    }
   }
 
   @override
@@ -69,205 +87,238 @@ class _TransportsState extends State<Transports> {
 
   @override
   Widget build(BuildContext context) {
+    final bool showAddButton = _currentUser != null && _userType == 'admin';
     return Scaffold(
       appBar: AppBar(
-        backgroundColor: const Color.fromRGBO(238, 238, 238, 1),
+        automaticallyImplyLeading: false,
+        elevation: 1,
+
+        backgroundColor: const Color.fromRGBO(1, 142, 1, 1),
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back),
+          onPressed: () {
+            Navigator.of(context).pop(); // Navigate back when pressed
+          },
+          color: Colors.white, // Set the color of the arrow to white
+        ),
+
         // titleSpacing: 1,
         title: const Text(
-          "Transports",
-          style: TextStyle(fontWeight: FontWeight.bold),
+          "Hotels",
+          style: TextStyle(fontWeight: FontWeight.bold, color: Colors.white),
         ),
-        elevation: 1,
         actions: [
           IconButton(
-            icon: const Icon(Icons.search),
+            icon: const Icon(
+              Icons.search,
+              color: Colors.white,
+            ),
             onPressed: () {
-              showSearch(
-                  context: context, delegate: _TransportSearchDelegate());
+              showSearch(context: context, delegate: _HotelSearchDelegate());
             },
           ),
         ],
       ),
-      body: StreamBuilder(
-        stream: FirebaseFirestore.instance
-            .collection('transports')
-            // .where('name', isGreaterThanOrEqualTo: _searchQuery)
-            // .where('name', isLessThan: _searchQuery + 'z')
-            .snapshots(),
-        builder: (context, AsyncSnapshot<QuerySnapshot> snapshot) {
-          if (snapshot.connectionState == ConnectionState.waiting) {
-            return const Center(
-              child: CircularProgressIndicator(),
-            );
-          }
-
-          if (snapshot.hasError) {
-            return const Center(
-              child: Text(
-                  'Error fetching data. Please check your network connection.'),
-            );
-          }
-
-          final transports = snapshot.data!.docs;
-
-          if (transports.isEmpty) {
-            return const Column(
-              children: [
-                SizedBox(
-                  height: 20,
-                ),
-                Text('No Transport Posted Yet'),
-              ],
-            );
-          }
-
-          return GridView.builder(
-            gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-              crossAxisCount: 2,
-              crossAxisSpacing: 8.0,
-              mainAxisSpacing: 8.0,
-            ),
-            itemCount: transports.length,
-            itemBuilder: (context, index) {
-              final transport = transports[index];
-              final name = transport['name'];
-              final email = transport['email'];
-              final phoneNumber = transport['phoneNumber'];
-              final destination = transport['destination'];
-              final price = transport['price'];
-              final description = transport['description'];
-              final datePosted =
-                  (transport['datePosted'] as Timestamp).toDate();
-              final imageUrl = transport['imageUrl'];
-
-              return GestureDetector(
-                onTap: () {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (context) => DestinationDetailPage(
-                        name: name,
-                        email: email,
-                        phoneNumber: phoneNumber,
-                        destination: destination,
-                        price: price,
-                        description: description,
-                        datePosted: datePosted,
-                        imageUrl: imageUrl,
+      body: Column(
+        children: [
+          const SizedBox(
+            height: 15,
+          ),
+          if (showAddButton)
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 16.0),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.end,
+                children: [
+                  TextButton(
+                    onPressed: () {
+                      // Navigate to the screen where hotels can be added
+                      // Replace 'DestinationDetailPage' with the appropriate screen
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => const HotelForm(),
+                        ),
+                      );
+                    },
+                    child: const Text(
+                      'Add Hotel',
+                      style: TextStyle(
+                        color: Colors.blue,
+                        fontWeight: FontWeight.bold,
                       ),
                     ),
+                  ),
+                ],
+              ),
+            ),
+          Expanded(
+            child: StreamBuilder(
+              stream:
+                  FirebaseFirestore.instance.collection('hotels').snapshots(),
+              builder: (context, AsyncSnapshot<QuerySnapshot> snapshot) {
+                if (snapshot.connectionState == ConnectionState.waiting) {
+                  return const Center(
+                    child: CircularProgressIndicator(),
                   );
-                },
-                child: Card(
-                  margin: const EdgeInsets.all(8.0),
-                  child: SizedBox(
-                    width: MediaQuery.of(context).size.width / 2 - 20,
-                    child: ClipRRect(
-                      borderRadius: BorderRadius.circular(10.0),
-                      child: Container(
-                        decoration: BoxDecoration(
-                          image: DecorationImage(
-                            image: NetworkImage(imageUrl),
-                            fit: BoxFit.cover,
-                          ),
-                        ),
-                        child: Stack(
-                          children: [
-                            Container(
-                              decoration: BoxDecoration(
-                                color: Colors.black.withOpacity(0.4),
-                              ),
+                }
+
+                if (snapshot.hasError) {
+                  return const Center(
+                    child: Text(
+                        'Error fetching data. Please check your network connection.'),
+                  );
+                }
+
+                final hotels = snapshot.data!.docs;
+
+                if (hotels.isEmpty) {
+                  return const Column(
+                    children: [
+                      SizedBox(
+                        height: 20,
+                      ),
+                      Text('No Hotel Posted Yet'),
+                    ],
+                  );
+                }
+
+                return GridView.builder(
+                  gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                    crossAxisCount: 2,
+                    crossAxisSpacing: 8.0,
+                    mainAxisSpacing: 8.0,
+                  ),
+                  itemCount: hotels.length,
+                  itemBuilder: (context, index) {
+                    final hotel = hotels[index];
+                    final name = hotel['name'];
+                    final email = hotel['email'];
+                    final phoneNumber = hotel['phoneNumber'];
+                    final location = hotel['location'];
+                    final price = hotel['price'];
+                    final description = hotel['description'];
+                    final datePosted =
+                        (hotel['datePosted'] as Timestamp).toDate();
+                    final imageUrl = hotel['imageUrl'];
+
+                    return GestureDetector(
+                      onTap: () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => DestinationDetailPage(
+                              name: name,
+                              email: email,
+                              phoneNumber: phoneNumber,
+                              location: location,
+                              price: price,
+                              description: description,
+                              datePosted: datePosted,
+                              imageUrl: imageUrl,
                             ),
-                            Container(
-                              padding: const EdgeInsets.all(8.0),
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                mainAxisAlignment:
-                                    MainAxisAlignment.spaceBetween,
+                          ),
+                        );
+                      },
+                      child: Card(
+                        margin: const EdgeInsets.all(8.0),
+                        child: SizedBox(
+                          width: MediaQuery.of(context).size.width / 2 - 20,
+                          child: ClipRRect(
+                            borderRadius: BorderRadius.circular(10.0),
+                            child: Container(
+                              decoration: BoxDecoration(
+                                image: DecorationImage(
+                                  image: NetworkImage(imageUrl),
+                                  fit: BoxFit.cover,
+                                ),
+                              ),
+                              child: Stack(
                                 children: [
-                                  Row(
-                                    mainAxisAlignment: MainAxisAlignment.end,
-                                    children: [
-                                      IconButton(
-                                        tooltip: 'Add to Favorites',
-                                        icon: const Icon(
-                                          Icons.favorite_border_outlined,
-                                          color: Colors.red,
-                                        ),
-                                        onPressed: () {
-                                          // _confirmDeleteTransport(
-                                          //     context, transport.id, transport['imageUrl']);
-                                          Navigator.push(
-                                            context,
-                                            MaterialPageRoute(
-                                              builder: (context) =>
-                                                  const TransportForm(),
-                                            ),
-                                          );
-                                        },
-                                      ),
-                                      IconButton(
-                                        tooltip: 'Delete Transport',
-                                        icon: const Icon(
-                                          Icons.delete,
-                                          color: Colors.red,
-                                        ),
-                                        onPressed: () {
-                                          _confirmDeleteTransport(
-                                              context,
-                                              transport.id,
-                                              transport['imageUrl']);
-                                        },
-                                      ),
-                                    ],
+                                  Container(
+                                    decoration: BoxDecoration(
+                                      color: Colors.black.withOpacity(0.4),
+                                    ),
                                   ),
-                                  Column(
-                                    mainAxisAlignment: MainAxisAlignment.end,
-                                    crossAxisAlignment:
-                                        CrossAxisAlignment.start,
-                                    children: [
-                                      RatingBar.builder(
-                                        initialRating: 2,
-                                        minRating: 1,
-                                        direction: Axis.horizontal,
-                                        allowHalfRating: true,
-                                        itemCount: 5,
-                                        itemSize: 20,
-                                        itemPadding: const EdgeInsets.symmetric(
-                                            horizontal: 4),
-                                        itemBuilder: (context, _) => const Icon(
-                                          Icons.star,
-                                          color: Colors.amber,
+                                  Container(
+                                    padding: const EdgeInsets.all(8.0),
+                                    child: Column(
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.start,
+                                      mainAxisAlignment:
+                                          MainAxisAlignment.spaceBetween,
+                                      children: [
+                                        Row(
+                                          mainAxisAlignment:
+                                              MainAxisAlignment.end,
+                                          children: [
+                                            if (showAddButton)
+                                              IconButton(
+                                                tooltip: 'Delete Hotel',
+                                                icon: const Icon(
+                                                  Icons.delete,
+                                                  color: Colors.red,
+                                                ),
+                                                onPressed: () {
+                                                  _confirmDeleteHotel(
+                                                      context,
+                                                      hotel.id,
+                                                      hotel['imageUrl']);
+                                                },
+                                              ),
+                                          ],
                                         ),
-                                        unratedColor: Colors.white,
-                                        onRatingUpdate: (rating) {
-                                          print(rating);
-                                        },
-                                      ),
-                                      Text(
-                                        name,
-                                        style: const TextStyle(
-                                          overflow: TextOverflow.ellipsis,
-                                          fontSize: 20.0,
-                                          fontWeight: FontWeight.bold,
-                                          color: Colors.white,
+                                        Column(
+                                          mainAxisAlignment:
+                                              MainAxisAlignment.end,
+                                          crossAxisAlignment:
+                                              CrossAxisAlignment.start,
+                                          children: [
+                                            RatingBar.builder(
+                                              initialRating: 2,
+                                              minRating: 1,
+                                              direction: Axis.horizontal,
+                                              allowHalfRating: true,
+                                              itemCount: 5,
+                                              itemSize: 20,
+                                              itemPadding:
+                                                  const EdgeInsets.symmetric(
+                                                      horizontal: 4),
+                                              itemBuilder: (context, _) =>
+                                                  const Icon(
+                                                Icons.star,
+                                                color: Colors.amber,
+                                              ),
+                                              unratedColor: Colors.white,
+                                              onRatingUpdate: (rating) {},
+                                            ),
+                                            Text(
+                                              name,
+                                              style: const TextStyle(
+                                                overflow: TextOverflow.ellipsis,
+                                                fontSize: 20.0,
+                                                fontWeight: FontWeight.bold,
+                                                color: Colors.white,
+                                              ),
+                                            ),
+                                          ],
                                         ),
-                                      ),
-                                    ],
+                                      ],
+                                    ),
                                   ),
                                 ],
                               ),
                             ),
-                          ],
+                          ),
                         ),
                       ),
-                    ),
-                  ),
-                ),
-              );
-            },
-          );
-        },
+                    );
+                  },
+                );
+              },
+            ),
+          ),
+        ],
       ),
     );
   }
@@ -277,7 +328,7 @@ class _TransportsState extends State<Transports> {
   }
 }
 
-class _TransportSearchDelegate extends SearchDelegate<String> {
+class _HotelSearchDelegate extends SearchDelegate<String> {
   @override
   List<Widget> buildActions(BuildContext context) {
     return [
@@ -303,8 +354,8 @@ class _TransportSearchDelegate extends SearchDelegate<String> {
   @override
   Widget buildResults(BuildContext context) {
     if (query.isEmpty) {
-      // Show all transports if query is empty
-      return _buildAllTransports(context);
+      // Show all hotels if query is empty
+      return _buildAllHotels(context);
     } else {
       // Show search results based on the query
       return _buildSearchResults(context);
@@ -314,17 +365,17 @@ class _TransportSearchDelegate extends SearchDelegate<String> {
   @override
   Widget buildSuggestions(BuildContext context) {
     if (query.isEmpty) {
-      // Show all transports if query is empty
-      return _buildAllTransports(context);
+      // Show all hotels if query is empty
+      return _buildAllHotels(context);
     } else {
       // Show search suggestions based on the query
       return _buildSearchResults(context);
     }
   }
 
-  Widget _buildAllTransports(BuildContext context) {
+  Widget _buildAllHotels(BuildContext context) {
     return StreamBuilder(
-      stream: FirebaseFirestore.instance.collection('transports').snapshots(),
+      stream: FirebaseFirestore.instance.collection('hotels').snapshots(),
       builder: (context, AsyncSnapshot<QuerySnapshot> snapshot) {
         if (snapshot.connectionState == ConnectionState.waiting) {
           return const Center(
@@ -339,11 +390,11 @@ class _TransportSearchDelegate extends SearchDelegate<String> {
           );
         }
 
-        final transports = snapshot.data!.docs;
+        final hotels = snapshot.data!.docs;
 
-        if (transports.isEmpty) {
+        if (hotels.isEmpty) {
           return const Center(
-            child: Text('No Transport Posted Yet'),
+            child: Text('No Hotel Posted Yet'),
           );
         }
 
@@ -353,17 +404,17 @@ class _TransportSearchDelegate extends SearchDelegate<String> {
             crossAxisSpacing: 8.0,
             mainAxisSpacing: 8.0,
           ),
-          itemCount: transports.length,
+          itemCount: hotels.length,
           itemBuilder: (context, index) {
-            final transport = transports[index];
-            final name = transport['name'];
-            final email = transport['email'];
-            final phoneNumber = transport['phoneNumber'];
-            final destination = transport['destination'];
-            final price = transport['price'];
-            final description = transport['description'];
-            final datePosted = (transport['datePosted'] as Timestamp).toDate();
-            final imageUrl = transport['imageUrl'];
+            final hotel = hotels[index];
+            final name = hotel['name'];
+            final email = hotel['email'];
+            final phoneNumber = hotel['phoneNumber'];
+            final location = hotel['location'];
+            final price = hotel['price'];
+            final description = hotel['description'];
+            final datePosted = (hotel['datePosted'] as Timestamp).toDate();
+            final imageUrl = hotel['imageUrl'];
 
             return GestureDetector(
               onTap: () {
@@ -374,7 +425,7 @@ class _TransportSearchDelegate extends SearchDelegate<String> {
                       name: name,
                       email: email,
                       phoneNumber: phoneNumber,
-                      destination: destination,
+                      location: location,
                       price: price,
                       description: description,
                       datePosted: datePosted,
@@ -413,34 +464,14 @@ class _TransportSearchDelegate extends SearchDelegate<String> {
                                   mainAxisAlignment: MainAxisAlignment.end,
                                   children: [
                                     IconButton(
-                                      tooltip: 'Add to Favorites',
-                                      icon: const Icon(
-                                        Icons.favorite_border_outlined,
-                                        color: Colors.red,
-                                      ),
-                                      onPressed: () {
-                                        // _confirmDeleteTransport(
-                                        //     context, transport.id, transport['imageUrl']);
-                                        Navigator.push(
-                                          context,
-                                          MaterialPageRoute(
-                                            builder: (context) =>
-                                                const TransportForm(),
-                                          ),
-                                        );
-                                      },
-                                    ),
-                                    IconButton(
-                                      tooltip: 'Delete Transport',
+                                      tooltip: 'Delete Hotel',
                                       icon: const Icon(
                                         Icons.delete,
                                         color: Colors.red,
                                       ),
                                       onPressed: () {
-                                        _confirmDeleteTransport(
-                                            context,
-                                            transport.id,
-                                            transport['imageUrl']);
+                                        _confirmDeleteHotel(context, hotel.id,
+                                            hotel['imageUrl']);
                                       },
                                     ),
                                   ],
@@ -463,9 +494,7 @@ class _TransportSearchDelegate extends SearchDelegate<String> {
                                         color: Colors.amber,
                                       ),
                                       unratedColor: Colors.white,
-                                      onRatingUpdate: (rating) {
-                                        print(rating);
-                                      },
+                                      onRatingUpdate: (rating) {},
                                     ),
                                     Text(
                                       name,
@@ -496,7 +525,7 @@ class _TransportSearchDelegate extends SearchDelegate<String> {
 
   Widget _buildSearchResults(BuildContext context) {
     return StreamBuilder(
-      stream: FirebaseFirestore.instance.collection('transports').snapshots(),
+      stream: FirebaseFirestore.instance.collection('hotels').snapshots(),
       builder: (context, AsyncSnapshot<QuerySnapshot> snapshot) {
         if (snapshot.connectionState == ConnectionState.waiting) {
           return const Center(
@@ -511,20 +540,20 @@ class _TransportSearchDelegate extends SearchDelegate<String> {
           );
         }
 
-        final transports = snapshot.data!.docs;
+        final hotels = snapshot.data!.docs;
 
-        if (transports.isEmpty) {
+        if (hotels.isEmpty) {
           return const Center(
             child: Text('No results found'),
           );
         }
 
-        final filteredTransports = transports.where((transport) {
-          final name = transport['name'].toString().toLowerCase();
+        final filteredHotels = hotels.where((hotel) {
+          final name = hotel['name'].toString().toLowerCase();
           return name.contains(query.toLowerCase());
         }).toList();
 
-        if (filteredTransports.isEmpty) {
+        if (filteredHotels.isEmpty) {
           return const Center(
             child: Text('No results found'),
           );
@@ -536,20 +565,21 @@ class _TransportSearchDelegate extends SearchDelegate<String> {
             crossAxisSpacing: 8.0,
             mainAxisSpacing: 8.0,
           ),
-          itemCount: filteredTransports.length,
+          itemCount: filteredHotels.length,
           itemBuilder: (context, index) {
-            final transport = filteredTransports[index];
-            final name = transport['name'];
-            final email = transport['email'];
-            final phoneNumber = transport['phoneNumber'];
-            final destination = transport['destination'];
-            final price = transport['price'];
-            final description = transport['description'];
-            final datePosted = (transport['datePosted'] as Timestamp).toDate();
-            final imageUrl = transport['imageUrl'];
+            final hotel = filteredHotels[index];
+            final name = hotel['name'];
+            final email = hotel['email'];
+            final phoneNumber = hotel['phoneNumber'];
+            final location = hotel['location'];
+            final price = hotel['price'];
+            final description = hotel['description'];
+            final datePosted = (hotel['datePosted'] as Timestamp).toDate();
+            final imageUrl = hotel['imageUrl'];
 
             return GestureDetector(
               onTap: () {
+                // Navigate to hotel detail page
                 Navigator.push(
                   context,
                   MaterialPageRoute(
@@ -557,7 +587,7 @@ class _TransportSearchDelegate extends SearchDelegate<String> {
                       name: name,
                       email: email,
                       phoneNumber: phoneNumber,
-                      destination: destination,
+                      location: location,
                       price: price,
                       description: description,
                       datePosted: datePosted,
@@ -596,26 +626,14 @@ class _TransportSearchDelegate extends SearchDelegate<String> {
                                   mainAxisAlignment: MainAxisAlignment.end,
                                   children: [
                                     IconButton(
-                                      tooltip: 'Add to Favorites',
-                                      icon: const Icon(
-                                        Icons.favorite_border_outlined,
-                                        color: Colors.red,
-                                      ),
-                                      onPressed: () {
-                                        // Add to favorites functionality
-                                      },
-                                    ),
-                                    IconButton(
-                                      tooltip: 'Delete Transport',
+                                      tooltip: 'Delete Hotel',
                                       icon: const Icon(
                                         Icons.delete,
                                         color: Colors.red,
                                       ),
                                       onPressed: () {
-                                        _confirmDeleteTransport(
-                                            context,
-                                            transport.id,
-                                            transport['imageUrl']);
+                                        _confirmDeleteHotel(context, hotel.id,
+                                            hotel['imageUrl']);
                                       },
                                     ),
                                   ],
@@ -638,9 +656,7 @@ class _TransportSearchDelegate extends SearchDelegate<String> {
                                         color: Colors.amber,
                                       ),
                                       unratedColor: Colors.white,
-                                      onRatingUpdate: (rating) {
-                                        print(rating);
-                                      },
+                                      onRatingUpdate: (rating) {},
                                     ),
                                     Text(
                                       name,

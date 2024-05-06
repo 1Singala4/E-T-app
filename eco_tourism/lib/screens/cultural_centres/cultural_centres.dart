@@ -1,10 +1,11 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:eco_tourism/forms/cultural_centres_form.dart';
 import 'package:eco_tourism/screens/destination_detail.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_rating_bar/flutter_rating_bar.dart';
 import 'package:intl/intl.dart';
-import '../forms/cultural_centres_form.dart';
 
 void _confirmDeleteCulturalCentre(
     BuildContext context, String documentId, String? imageUrl) {
@@ -55,11 +56,27 @@ class CulturalCentres extends StatefulWidget {
 
 class _CulturalCentresState extends State<CulturalCentres> {
   late TextEditingController _searchController;
+  late User? _currentUser;
+  late String _userType = '';
 
   @override
   void initState() {
     super.initState();
+    _currentUser = FirebaseAuth.instance.currentUser;
+    _fetchUserType();
     _searchController = TextEditingController();
+  }
+
+  Future<void> _fetchUserType() async {
+    if (_currentUser != null) {
+      final doc = await FirebaseFirestore.instance
+          .collection('users')
+          .doc(_currentUser!.uid)
+          .get();
+      setState(() {
+        _userType = doc['userType'];
+      });
+    }
   }
 
   @override
@@ -70,18 +87,29 @@ class _CulturalCentresState extends State<CulturalCentres> {
 
   @override
   Widget build(BuildContext context) {
+    final bool showAddButton = _currentUser != null && _userType == 'admin';
     return Scaffold(
       appBar: AppBar(
         automaticallyImplyLeading: false,
-        backgroundColor: const Color.fromRGBO(238, 238, 238, 1),
+        elevation: 1,
+
+        backgroundColor: const Color.fromRGBO(1, 142, 1, 1),
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back),
+          onPressed: () {
+            Navigator.of(context).pop(); // Navigate back when pressed
+          },
+          color: Colors.white, // Set the color of the arrow to white
+        ),
+
         // titleSpacing: 1,
         title: const Text(
-          "CulturalCentres",
-          style: TextStyle(fontWeight: FontWeight.bold),
+          "Cultural Centres",
+          style: TextStyle(fontWeight: FontWeight.bold, color: Colors.white),
         ),
         actions: [
           IconButton(
-            icon: const Icon(Icons.search),
+            icon: const Icon(Icons.search, color: Colors.white),
             onPressed: () {
               showSearch(
                   context: context, delegate: _CulturalCentreSearchDelegate());
@@ -89,184 +117,209 @@ class _CulturalCentresState extends State<CulturalCentres> {
           ),
         ],
       ),
-      body: StreamBuilder(
-        stream: FirebaseFirestore.instance
-            .collection('cultural_centres')
-            .snapshots(),
-        builder: (context, AsyncSnapshot<QuerySnapshot> snapshot) {
-          if (snapshot.connectionState == ConnectionState.waiting) {
-            return const Center(
-              child: CircularProgressIndicator(),
-            );
-          }
-
-          if (snapshot.hasError) {
-            return const Center(
-              child: Text(
-                  'Error fetching data. Please check your network connection.'),
-            );
-          }
-
-          final culturalCentres = snapshot.data!.docs;
-
-          if (culturalCentres.isEmpty) {
-            return const Column(
-              children: [
-                SizedBox(
-                  height: 20,
-                ),
-                Text('No CulturalCentre Posted Yet'),
-              ],
-            );
-          }
-
-          return GridView.builder(
-            gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-              crossAxisCount: 2,
-              crossAxisSpacing: 8.0,
-              mainAxisSpacing: 8.0,
-            ),
-            itemCount: culturalCentres.length,
-            itemBuilder: (context, index) {
-              final culturalCentre = culturalCentres[index];
-              final name = culturalCentre['name'];
-              final email = culturalCentre['email'];
-              final phoneNumber = culturalCentre['phoneNumber'];
-              final location = culturalCentre['location'];
-              final price = culturalCentre['price'];
-              final description = culturalCentre['description'];
-              final datePosted =
-                  (culturalCentre['datePosted'] as Timestamp).toDate();
-              final imageUrl = culturalCentre['imageUrl'];
-
-              return GestureDetector(
-                onTap: () {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (context) => DestinationDetailPage(
-                        name: name,
-                        location: location,
-                        price: price,
-                        description: description,
-                        datePosted: datePosted,
-                        imageUrl: imageUrl,
-                        email: email,
-                        phoneNumber: phoneNumber,
+      body: Column(
+        children: [
+          const SizedBox(
+            height: 15,
+          ),
+          if (showAddButton)
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 16.0),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.end,
+                children: [
+                  TextButton(
+                    onPressed: () {
+                      // Navigate to the screen where hotels can be added
+                      // Replace 'DestinationDetailPage' with the appropriate screen
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => const CulturalCentresForm(),
+                        ),
+                      );
+                    },
+                    child: const Text(
+                      'Add Cultural Centre',
+                      style: TextStyle(
+                        color: Colors.blue,
+                        fontWeight: FontWeight.bold,
                       ),
                     ),
+                  ),
+                ],
+              ),
+            ),
+          Expanded(
+            child: StreamBuilder(
+              stream: FirebaseFirestore.instance
+                  .collection('cultural_centres')
+                  .snapshots(),
+              builder: (context, AsyncSnapshot<QuerySnapshot> snapshot) {
+                if (snapshot.connectionState == ConnectionState.waiting) {
+                  return const Center(
+                    child: CircularProgressIndicator(),
                   );
-                },
-                child: Card(
-                  margin: const EdgeInsets.all(8.0),
-                  child: SizedBox(
-                    width: MediaQuery.of(context).size.width / 2 - 20,
-                    child: ClipRRect(
-                      borderRadius: BorderRadius.circular(10.0),
-                      child: Container(
-                        decoration: BoxDecoration(
-                          image: DecorationImage(
-                            image: NetworkImage(imageUrl),
-                            fit: BoxFit.cover,
-                          ),
-                        ),
-                        child: Stack(
-                          children: [
-                            Container(
-                              decoration: BoxDecoration(
-                                color: Colors.black.withOpacity(0.4),
-                              ),
+                }
+
+                if (snapshot.hasError) {
+                  return const Center(
+                    child: Text(
+                        'Error fetching data. Please check your network connection.'),
+                  );
+                }
+
+                final culturalCentres = snapshot.data!.docs;
+
+                if (culturalCentres.isEmpty) {
+                  return const Column(
+                    children: [
+                      SizedBox(
+                        height: 20,
+                      ),
+                      Text('No CulturalCentre Posted Yet'),
+                    ],
+                  );
+                }
+
+                return GridView.builder(
+                  gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                    crossAxisCount: 2,
+                    crossAxisSpacing: 8.0,
+                    mainAxisSpacing: 8.0,
+                  ),
+                  itemCount: culturalCentres.length,
+                  itemBuilder: (context, index) {
+                    final culturalCentre = culturalCentres[index];
+                    final name = culturalCentre['name'];
+                    final email = culturalCentre['email'];
+                    final phoneNumber = culturalCentre['phoneNumber'];
+                    final location = culturalCentre['location'];
+                    final price = culturalCentre['price'];
+                    final description = culturalCentre['description'];
+                    final datePosted =
+                        (culturalCentre['datePosted'] as Timestamp).toDate();
+                    final imageUrl = culturalCentre['imageUrl'];
+
+                    return GestureDetector(
+                      onTap: () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => DestinationDetailPage(
+                              name: name,
+                              location: location,
+                              price: price,
+                              description: description,
+                              datePosted: datePosted,
+                              imageUrl: imageUrl,
+                              email: email,
+                              phoneNumber: phoneNumber,
                             ),
-                            Container(
-                              padding: const EdgeInsets.all(8.0),
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                mainAxisAlignment:
-                                    MainAxisAlignment.spaceBetween,
+                          ),
+                        );
+                      },
+                      child: Card(
+                        margin: const EdgeInsets.all(8.0),
+                        child: SizedBox(
+                          width: MediaQuery.of(context).size.width / 2 - 20,
+                          child: ClipRRect(
+                            borderRadius: BorderRadius.circular(10.0),
+                            child: Container(
+                              decoration: BoxDecoration(
+                                image: DecorationImage(
+                                  image: NetworkImage(imageUrl),
+                                  fit: BoxFit.cover,
+                                ),
+                              ),
+                              child: Stack(
                                 children: [
-                                  Row(
-                                    mainAxisAlignment: MainAxisAlignment.end,
-                                    children: [
-                                      IconButton(
-                                        tooltip: 'Add to Favorites',
-                                        icon: const Icon(
-                                          Icons.favorite_border_outlined,
-                                          color: Colors.red,
-                                        ),
-                                        onPressed: () {
-                                          // _confirmDeleteCulturalCentre(
-                                          //     context, cultural_centre.id, cultural_centre['imageUrl']);
-                                          Navigator.push(
-                                            context,
-                                            MaterialPageRoute(
-                                              builder: (context) =>
-                                                  const CulturalCentresForm(),
-                                            ),
-                                          );
-                                        },
-                                      ),
-                                      IconButton(
-                                        tooltip: 'Delete CulturalCentre',
-                                        icon: const Icon(
-                                          Icons.delete,
-                                          color: Colors.red,
-                                        ),
-                                        onPressed: () {
-                                          _confirmDeleteCulturalCentre(
-                                              context,
-                                              culturalCentre.id,
-                                              culturalCentre['imageUrl']);
-                                        },
-                                      ),
-                                    ],
+                                  Container(
+                                    decoration: BoxDecoration(
+                                      color: Colors.black.withOpacity(0.4),
+                                    ),
                                   ),
-                                  Column(
-                                    mainAxisAlignment: MainAxisAlignment.end,
-                                    crossAxisAlignment:
-                                        CrossAxisAlignment.start,
-                                    children: [
-                                      RatingBar.builder(
-                                        initialRating: 2,
-                                        minRating: 1,
-                                        direction: Axis.horizontal,
-                                        allowHalfRating: true,
-                                        itemCount: 5,
-                                        itemSize: 20,
-                                        itemPadding: const EdgeInsets.symmetric(
-                                            horizontal: 4),
-                                        itemBuilder: (context, _) => const Icon(
-                                          Icons.star,
-                                          color: Colors.amber,
+                                  Container(
+                                    padding: const EdgeInsets.all(8.0),
+                                    child: Column(
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.start,
+                                      mainAxisAlignment:
+                                          MainAxisAlignment.spaceBetween,
+                                      children: [
+                                        Row(
+                                          mainAxisAlignment:
+                                              MainAxisAlignment.end,
+                                          children: [
+                                            if (showAddButton)
+                                              IconButton(
+                                                tooltip:
+                                                    'Delete CulturalCentre',
+                                                icon: const Icon(
+                                                  Icons.delete,
+                                                  color: Colors.red,
+                                                ),
+                                                onPressed: () {
+                                                  _confirmDeleteCulturalCentre(
+                                                      context,
+                                                      culturalCentre.id,
+                                                      culturalCentre[
+                                                          'imageUrl']);
+                                                },
+                                              ),
+                                          ],
                                         ),
-                                        unratedColor: Colors.white,
-                                        onRatingUpdate: (rating) {
-                                          print(rating);
-                                        },
-                                      ),
-                                      Text(
-                                        name,
-                                        style: const TextStyle(
-                                          overflow: TextOverflow.ellipsis,
-                                          fontSize: 20.0,
-                                          fontWeight: FontWeight.bold,
-                                          color: Colors.white,
+                                        Column(
+                                          mainAxisAlignment:
+                                              MainAxisAlignment.end,
+                                          crossAxisAlignment:
+                                              CrossAxisAlignment.start,
+                                          children: [
+                                            RatingBar.builder(
+                                              initialRating: 2,
+                                              minRating: 1,
+                                              direction: Axis.horizontal,
+                                              allowHalfRating: true,
+                                              itemCount: 5,
+                                              itemSize: 20,
+                                              itemPadding:
+                                                  const EdgeInsets.symmetric(
+                                                      horizontal: 4),
+                                              itemBuilder: (context, _) =>
+                                                  const Icon(
+                                                Icons.star,
+                                                color: Colors.amber,
+                                              ),
+                                              unratedColor: Colors.white,
+                                              onRatingUpdate: (rating) {},
+                                            ),
+                                            Text(
+                                              name,
+                                              style: const TextStyle(
+                                                overflow: TextOverflow.ellipsis,
+                                                fontSize: 20.0,
+                                                fontWeight: FontWeight.bold,
+                                                color: Colors.white,
+                                              ),
+                                            ),
+                                          ],
                                         ),
-                                      ),
-                                    ],
+                                      ],
+                                    ),
                                   ),
                                 ],
                               ),
                             ),
-                          ],
+                          ),
                         ),
                       ),
-                    ),
-                  ),
-                ),
-              );
-            },
-          );
-        },
+                    );
+                  },
+                );
+              },
+            ),
+          ),
+        ],
       ),
     );
   }
@@ -414,24 +467,6 @@ class _CulturalCentreSearchDelegate extends SearchDelegate<String> {
                                   mainAxisAlignment: MainAxisAlignment.end,
                                   children: [
                                     IconButton(
-                                      tooltip: 'Add to Favorites',
-                                      icon: const Icon(
-                                        Icons.favorite_border_outlined,
-                                        color: Colors.red,
-                                      ),
-                                      onPressed: () {
-                                        // _confirmDeleteCulturalCentre(
-                                        //     context, cultural_centre.id, cultural_centre['imageUrl']);
-                                        Navigator.push(
-                                          context,
-                                          MaterialPageRoute(
-                                            builder: (context) =>
-                                                const CulturalCentresForm(),
-                                          ),
-                                        );
-                                      },
-                                    ),
-                                    IconButton(
                                       tooltip: 'Delete CulturalCentre',
                                       icon: const Icon(
                                         Icons.delete,
@@ -464,9 +499,7 @@ class _CulturalCentreSearchDelegate extends SearchDelegate<String> {
                                         color: Colors.amber,
                                       ),
                                       unratedColor: Colors.white,
-                                      onRatingUpdate: (rating) {
-                                        print(rating);
-                                      },
+                                      onRatingUpdate: (rating) {},
                                     ),
                                     Text(
                                       name,
@@ -599,16 +632,6 @@ class _CulturalCentreSearchDelegate extends SearchDelegate<String> {
                                   mainAxisAlignment: MainAxisAlignment.end,
                                   children: [
                                     IconButton(
-                                      tooltip: 'Add to Favorites',
-                                      icon: const Icon(
-                                        Icons.favorite_border_outlined,
-                                        color: Colors.red,
-                                      ),
-                                      onPressed: () {
-                                        // Add to favorites functionality
-                                      },
-                                    ),
-                                    IconButton(
                                       tooltip: 'Delete CulturalCentre',
                                       icon: const Icon(
                                         Icons.delete,
@@ -641,9 +664,7 @@ class _CulturalCentreSearchDelegate extends SearchDelegate<String> {
                                         color: Colors.amber,
                                       ),
                                       unratedColor: Colors.white,
-                                      onRatingUpdate: (rating) {
-                                        print(rating);
-                                      },
+                                      onRatingUpdate: (rating) {},
                                     ),
                                     Text(
                                       name,
