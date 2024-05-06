@@ -87,10 +87,11 @@ class _HomePageState extends State<HomePage> {
     return Scaffold(
       appBar: AppBar(
         automaticallyImplyLeading: false,
-        backgroundColor: const Color.fromRGBO(238, 238, 238, 1),
+        // backgroundColor: const Color.fromRGBO(238, 238, 238, 1),
+        elevation: 1,
         // titleSpacing: 1,
         title: const Text(
-          "Travel Malawi",
+          "Eco Tourism",
           style: TextStyle(fontWeight: FontWeight.bold),
         ),
         actions: <Widget>[

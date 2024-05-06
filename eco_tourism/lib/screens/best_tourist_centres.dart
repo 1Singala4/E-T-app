@@ -1,11 +1,10 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:eco_tourism/screens/destination_detail.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_rating_bar/flutter_rating_bar.dart';
 import 'package:intl/intl.dart';
-
-import '../forms/tourist_centre_form.dart';
 
 class BestTouristCentres extends StatefulWidget {
   const BestTouristCentres({super.key});
@@ -15,6 +14,28 @@ class BestTouristCentres extends StatefulWidget {
 }
 
 class _BestTouristCentresState extends State<BestTouristCentres> {
+  late User? _currentUser;
+  late String _userType = '';
+
+  @override
+  void initState() {
+    super.initState();
+    _currentUser = FirebaseAuth.instance.currentUser;
+    _fetchUserType();
+  }
+
+  Future<void> _fetchUserType() async {
+    if (_currentUser != null) {
+      final doc = await FirebaseFirestore.instance
+          .collection('users')
+          .doc(_currentUser!.uid)
+          .get();
+      setState(() {
+        _userType = doc['userType'];
+      });
+    }
+  }
+
   void _confirmDeleteHotel(
       BuildContext context, String documentId, String? imageUrl) {
     showDialog(
@@ -101,6 +122,8 @@ class _BestTouristCentresState extends State<BestTouristCentres> {
             final datePosted =
                 (touristCentre['datePosted'] as Timestamp).toDate();
             final imageUrl = touristCentre['imageUrl'];
+            final bool showDeleteIcon =
+                _currentUser != null && _userType == 'admin';
 
             return GestureDetector(
               onTap: () {
@@ -151,37 +174,20 @@ class _BestTouristCentresState extends State<BestTouristCentres> {
                                 Row(
                                   mainAxisAlignment: MainAxisAlignment.end,
                                   children: [
-                                    IconButton(
-                                      tooltip: 'Add to Favorites',
-                                      icon: const Icon(
-                                        Icons.favorite_border_outlined,
-                                        color: Colors.red,
+                                    if (showDeleteIcon)
+                                      IconButton(
+                                        tooltip: 'Delete Hotel',
+                                        icon: const Icon(
+                                          Icons.delete,
+                                          color: Colors.red,
+                                        ),
+                                        onPressed: () {
+                                          _confirmDeleteHotel(
+                                              context,
+                                              touristCentre.id,
+                                              touristCentre['imageUrl']);
+                                        },
                                       ),
-                                      onPressed: () {
-                                        // _confirmDeleteHotel(
-                                        //     context, tourist_centre.id, tourist_centre['imageUrl']);
-                                        Navigator.push(
-                                          context,
-                                          MaterialPageRoute(
-                                            builder: (context) =>
-                                                const TouristCentresForm(), // Replace DestinationDetailPage() with your actual detail page
-                                          ),
-                                        );
-                                      },
-                                    ),
-                                    IconButton(
-                                      tooltip: 'Delete Hotel',
-                                      icon: const Icon(
-                                        Icons.delete,
-                                        color: Colors.red,
-                                      ),
-                                      onPressed: () {
-                                        _confirmDeleteHotel(
-                                            context,
-                                            touristCentre.id,
-                                            touristCentre['imageUrl']);
-                                      },
-                                    ),
                                   ],
                                 ),
                                 Column(

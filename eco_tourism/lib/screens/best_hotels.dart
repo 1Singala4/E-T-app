@@ -1,11 +1,10 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:eco_tourism/forms/hotel_form.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_rating_bar/flutter_rating_bar.dart';
 import 'package:intl/intl.dart';
 
-import '../forms/booking_form.dart';
 import 'destination_detail.dart';
 
 class BestHotels extends StatefulWidget {
@@ -16,6 +15,28 @@ class BestHotels extends StatefulWidget {
 }
 
 class _BestHotelsState extends State<BestHotels> {
+  late User? _currentUser;
+  late String _userType = '';
+
+  @override
+  void initState() {
+    super.initState();
+    _currentUser = FirebaseAuth.instance.currentUser;
+    _fetchUserType();
+  }
+
+  Future<void> _fetchUserType() async {
+    if (_currentUser != null) {
+      final doc = await FirebaseFirestore.instance
+          .collection('users')
+          .doc(_currentUser!.uid)
+          .get();
+      setState(() {
+        _userType = doc['userType'];
+      });
+    }
+  }
+
   void _confirmDeleteHotel(
       BuildContext context, String documentId, String? imageUrl) {
     showDialog(
@@ -99,7 +120,8 @@ class _BestHotelsState extends State<BestHotels> {
             final description = hotel['description'];
             final datePosted = (hotel['datePosted'] as Timestamp).toDate();
             final imageUrl = hotel['imageUrl'];
-
+            final bool showDeleteIcon =
+                _currentUser != null && _userType == 'admin';
             return GestureDetector(
               onTap: () {
                 Navigator.push(
@@ -149,35 +171,18 @@ class _BestHotelsState extends State<BestHotels> {
                                 Row(
                                   mainAxisAlignment: MainAxisAlignment.end,
                                   children: [
-                                    IconButton(
-                                      tooltip: 'Add to Favorites',
-                                      icon: const Icon(
-                                        Icons.favorite_border_outlined,
-                                        color: Colors.red,
+                                    if (showDeleteIcon)
+                                      IconButton(
+                                        tooltip: 'Delete Hotel',
+                                        icon: const Icon(
+                                          Icons.delete,
+                                          color: Colors.red,
+                                        ),
+                                        onPressed: () {
+                                          _confirmDeleteHotel(context, hotel.id,
+                                              hotel['imageUrl']);
+                                        },
                                       ),
-                                      onPressed: () {
-                                        // _confirmDeleteHotel(
-                                        //     context, hotel.id, hotel['imageUrl']);
-                                        // Navigator.push(
-                                        //   context,
-                                        //   MaterialPageRoute(
-                                        //     builder: (context) =>
-                                        //         BookingForm(), // Replace DestinationDetailPage() with your actual detail page
-                                        //   ),
-                                        // );
-                                      },
-                                    ),
-                                    IconButton(
-                                      tooltip: 'Delete Hotel',
-                                      icon: const Icon(
-                                        Icons.delete,
-                                        color: Colors.red,
-                                      ),
-                                      onPressed: () {
-                                        _confirmDeleteHotel(context, hotel.id,
-                                            hotel['imageUrl']);
-                                      },
-                                    ),
                                   ],
                                 ),
                                 Column(

@@ -1,12 +1,11 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:eco_tourism/screens/destination_detail.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_rating_bar/flutter_rating_bar.dart';
 import 'package:intl/intl.dart';
-
-import '../forms/cultural_centres_form.dart';
 
 class BestCulturalCentres extends StatefulWidget {
   const BestCulturalCentres({super.key});
@@ -16,6 +15,28 @@ class BestCulturalCentres extends StatefulWidget {
 }
 
 class _BestCulturalCentresState extends State<BestCulturalCentres> {
+  late User? _currentUser;
+  late String _userType = '';
+
+  @override
+  void initState() {
+    super.initState();
+    _currentUser = FirebaseAuth.instance.currentUser;
+    _fetchUserType();
+  }
+
+  Future<void> _fetchUserType() async {
+    if (_currentUser != null) {
+      final doc = await FirebaseFirestore.instance
+          .collection('users')
+          .doc(_currentUser!.uid)
+          .get();
+      setState(() {
+        _userType = doc['userType'];
+      });
+    }
+  }
+
   void _confirmDeleteHotel(
       BuildContext context, String documentId, String? imageUrl) {
     showDialog(
@@ -102,7 +123,9 @@ class _BestCulturalCentresState extends State<BestCulturalCentres> {
             final datePosted =
                 (culturalCentre['datePosted'] as Timestamp).toDate();
             final imageUrl = culturalCentre['imageUrl'];
-
+            // Show delete icon button only if user is authenticated and userType is 'admin'
+            final bool showDeleteIcon =
+                _currentUser != null && _userType == 'admin';
             return GestureDetector(
               onTap: () {
                 Navigator.push(
@@ -152,37 +175,20 @@ class _BestCulturalCentresState extends State<BestCulturalCentres> {
                                 Row(
                                   mainAxisAlignment: MainAxisAlignment.end,
                                   children: [
-                                    IconButton(
-                                      tooltip: 'Add to Favorites',
-                                      icon: const Icon(
-                                        Icons.favorite_border_outlined,
-                                        color: Colors.red,
+                                    if (showDeleteIcon)
+                                      IconButton(
+                                        tooltip: 'Delete Hotel',
+                                        icon: const Icon(
+                                          Icons.delete,
+                                          color: Colors.red,
+                                        ),
+                                        onPressed: () {
+                                          _confirmDeleteHotel(
+                                              context,
+                                              culturalCentre.id,
+                                              culturalCentre['imageUrl']);
+                                        },
                                       ),
-                                      onPressed: () {
-                                        // _confirmDeleteHotel(
-                                        //     context, cultural_centre.id, cultural_centre['imageUrl']);
-                                        Navigator.push(
-                                          context,
-                                          MaterialPageRoute(
-                                            builder: (context) =>
-                                                const CulturalCentresForm(), // Replace DestinationDetailPage() with your actual detail page
-                                          ),
-                                        );
-                                      },
-                                    ),
-                                    IconButton(
-                                      tooltip: 'Delete Hotel',
-                                      icon: const Icon(
-                                        Icons.delete,
-                                        color: Colors.red,
-                                      ),
-                                      onPressed: () {
-                                        _confirmDeleteHotel(
-                                            context,
-                                            culturalCentre.id,
-                                            culturalCentre['imageUrl']);
-                                      },
-                                    ),
                                   ],
                                 ),
                                 Column(

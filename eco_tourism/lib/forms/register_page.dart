@@ -2,10 +2,9 @@ import 'package:eco_tourism/forms/login_page.dart';
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import '../user_auth/firebase_auth_implementation/firebase_auth_services.dart';
-import '../screens/home_page.dart';
 
 class SignupPage extends StatefulWidget {
-  const SignupPage({Key? key});
+  const SignupPage({super.key});
 
   @override
   State<SignupPage> createState() => _SignupPageState();
@@ -112,7 +111,7 @@ class _SignupPageState extends State<SignupPage> {
                             ),
                             fillColor: const Color.fromRGBO(255, 255, 255, 1),
                             filled: true,
-                            prefixIcon: const Icon(Icons.password),
+                            prefixIcon: const Icon(Icons.lock),
                           ),
                           obscureText: true,
                         ),
@@ -127,7 +126,7 @@ class _SignupPageState extends State<SignupPage> {
                             ),
                             fillColor: const Color.fromRGBO(255, 255, 255, 1),
                             filled: true,
-                            prefixIcon: const Icon(Icons.password),
+                            prefixIcon: const Icon(Icons.lock),
                           ),
                           obscureText: true,
                         ),
@@ -229,7 +228,7 @@ class _SignupPageState extends State<SignupPage> {
         // ignore: use_build_context_synchronously
         context,
         MaterialPageRoute(
-          builder: (context) => const HomePage(),
+          builder: (context) => const LoginPage(),
         ),
       );
     } on FirebaseAuthException catch (e) {

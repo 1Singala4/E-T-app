@@ -1,3 +1,4 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 
@@ -153,14 +154,15 @@ class DestinationDetailPage extends StatelessWidget {
               width: 300,
               child: ElevatedButton(
                 onPressed: () async {
-                  // Check if user is authenticated
                   User? user = FirebaseAuth.instance.currentUser;
                   if (user != null) {
-                    String userName =
-                        user.displayName ?? ''; // Retrieve user's display name
-                    String userEmail =
-                        user.email ?? ''; // Retrieve user's email
+                    // Retrieve user's email
+                    String userEmail = user.email ?? '';
+
+                    // Retrieve username from Firestore
+                    String userName = await _getUserName(user.uid);
                     await Navigator.push(
+                      // ignore: use_build_context_synchronously
                       context,
                       MaterialPageRoute(
                         builder: (context) => BookingForm(
@@ -201,5 +203,23 @@ class DestinationDetailPage extends StatelessWidget {
         ],
       ),
     );
+  }
+
+  Future<String> _getUserName(String userId) async {
+    try {
+      // Retrieve user document from Firestore
+      DocumentSnapshot userSnapshot = await FirebaseFirestore.instance
+          .collection('users')
+          .doc(userId)
+          .get();
+
+      // Retrieve username from document
+      String userName = userSnapshot['username'];
+
+      return userName;
+    } catch (e) {
+      print('Error retrieving username: $e');
+      return '';
+    }
   }
 }

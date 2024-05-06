@@ -1,8 +1,7 @@
 import 'package:eco_tourism/screens/home_page.dart';
-import 'package:eco_tourism/forms/profile_page.dart';
+import 'package:eco_tourism/screens/profile_page.dart';
 import 'package:flutter/material.dart';
-import 'about_page.dart';
-import 'favorites_page.dart';
+import 'bookings.dart';
 
 class NavBar extends StatefulWidget {
   const NavBar({super.key});
@@ -16,7 +15,6 @@ class _NavBarState extends State<NavBar> {
   static final List<Widget> _pages = <Widget>[
     const HomePage(),
     const BookingsPage(),
-    const AboutPage(),
     const ProfilePage(),
   ];
 
@@ -37,10 +35,6 @@ class _NavBarState extends State<NavBar> {
           BottomNavigationBarItem(
             icon: Icon(Icons.person),
             label: 'Profile',
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.info),
-            label: 'About',
           ),
         ],
         currentIndex: _selectedIndex,

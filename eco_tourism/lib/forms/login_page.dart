@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import '../screens/home_page.dart';
+import '../screens/navbar.dart';
 import 'register_page.dart';
 import '../user_auth/firebase_auth_implementation/firebase_auth_services.dart';
 
@@ -173,7 +173,7 @@ class _LoginPageState extends State<LoginPage> {
         // ignore: use_build_context_synchronously
         context,
         MaterialPageRoute(
-          builder: (context) => const HomePage(),
+          builder: (context) => const NavBar(),
         ),
       );
     } on FirebaseAuthException catch (e) {

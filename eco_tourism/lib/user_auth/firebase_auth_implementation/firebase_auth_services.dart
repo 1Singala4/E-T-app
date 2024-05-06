@@ -18,6 +18,9 @@ class FirebaseAuthService {
       await _firestore.collection('users').doc(userCredential.user!.uid).set({
         'username': username,
         'email': email,
+        'bio':
+            'Saleor, on the other hand, provides a flexible and customizable foundation for building e-commerce applications but requires developers to write code to tailor the platform to specific business requirements, integrate with external systems, and extend its functionality.',
+        'userType': 'user', // Adding userType field with default value 'user'
         // Add more user data if needed
       });
     } catch (e) {
